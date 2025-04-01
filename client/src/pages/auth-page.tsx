@@ -4,6 +4,7 @@ import { useLocation } from "wouter";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { queryClient } from "@/lib/queryClient";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -40,6 +41,8 @@ const AuthPage = () => {
   const registerMutation = authContext?.registerMutation;
   
   const [activeTab, setActiveTab] = useState<string>("login");
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
   const [_, navigate] = useLocation();
 
   // Redirect if already logged in
@@ -80,30 +83,99 @@ const AuthPage = () => {
   // Login form submit handler
   const onLoginSubmit = async (values: LoginFormValues) => {
     try {
+      setIsLoggingIn(true);
       console.log("Login form submitted with values:", values);
       
-      if (!loginMutation || typeof loginMutation.mutateAsync !== 'function') {
-        console.error("Login mutation not available");
-        return;
+      // Direct fetch to bypass TanStack Query for troubleshooting
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(values),
+        credentials: "include"
+      });
+
+      console.log("Login response status:", response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Login failed:", errorText);
+        throw new Error(errorText || "Login failed");
       }
       
-      console.log("Attempting login...");
-      await loginMutation.mutateAsync(values);
-      console.log("Login mutation completed");
+      const userData = await response.json();
+      console.log("Login successful, user data:", userData);
+      
+      // Manually update the query cache
+      if (authContext) {
+        // Simulate the onSuccess handler from the mutation
+        queryClient.setQueryData(["/api/user"], userData);
+        
+        // Redirect based on role
+        if (userData.role === "client") {
+          navigate("/client-dashboard");
+        } else if (userData.role === "owner") {
+          navigate("/owner-dashboard");
+        } else if (userData.role === "admin") {
+          navigate("/admin-dashboard");
+        }
+      }
     } catch (error) {
       console.error("Login error:", error);
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 
   // Register form submit handler
-  const onRegisterSubmit = (values: RegisterFormValues) => {
-    if (registerMutation && typeof registerMutation.mutate === 'function') {
+  const onRegisterSubmit = async (values: RegisterFormValues) => {
+    try {
+      setIsRegistering(true);
+      console.log("Register form submitted with values:", values);
+      
       // Omit confirmPassword as it's not part of the schema
       const { confirmPassword, ...registrationData } = values;
-      registerMutation.mutate({
+      const registrationPayload = {
         ...registrationData,
         role: "client", // Default role is client
+      };
+      
+      console.log("Attempting registration...");
+      
+      // Direct fetch to bypass TanStack Query for troubleshooting
+      const response = await fetch("/api/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(registrationPayload),
+        credentials: "include"
       });
+      
+      console.log("Register response status:", response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Registration failed:", errorText);
+        throw new Error(errorText || "Registration failed");
+      }
+      
+      const userData = await response.json();
+      console.log("Registration successful, user data:", userData);
+      
+      // Manually update the query cache
+      if (authContext) {
+        // Simulate the onSuccess handler from the mutation
+        queryClient.setQueryData(["/api/user"], userData);
+        
+        // Redirect to client dashboard for new users
+        navigate("/client-dashboard");
+      }
+    } catch (error) {
+      console.error("Registration error:", error);
+    } finally {
+      setIsRegistering(false);
     }
   };
 
@@ -168,9 +240,9 @@ const AuthPage = () => {
                       <Button 
                         type="submit" 
                         className="w-full" 
-                        disabled={loginMutation?.isPending}
+                        disabled={isLoggingIn}
                       >
-                        {loginMutation?.isPending ? (
+                        {isLoggingIn ? (
                           <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                             Logging in...
@@ -297,9 +369,9 @@ const AuthPage = () => {
                       <Button 
                         type="submit" 
                         className="w-full"
-                        disabled={registerMutation?.isPending}
+                        disabled={isRegistering}
                       >
-                        {registerMutation?.isPending ? (
+                        {isRegistering ? (
                           <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                             Creating account...
