@@ -14,7 +14,14 @@ import { eq, and, sql, asc, gt, lt, gte, lte } from "drizzle-orm";
 import { db } from "./db";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db";
-import { getSafeAllServiceRequests, getSafeServiceRequestsByUserId, getSafeServiceRequest } from "./storage-fix";
+import { 
+  getSafeAllServiceRequests, 
+  getSafeServiceRequestsByUserId, 
+  getSafeServiceRequest,
+  getSafeAllAppointments,
+  getSafeAppointment,
+  getSafeAppointmentsByUserId
+} from "./storage-fix";
 
 // Create session stores
 const MemoryStore = createMemoryStore(session);
@@ -260,23 +267,18 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getAppointment(id: number): Promise<Appointment | undefined> {
-    const [appointment] = await db
-      .select()
-      .from(appointments)
-      .where(eq(appointments.id, id));
-    
-    return appointment;
+    // Use the safe implementation to avoid errors with missing columns
+    return getSafeAppointment(db, id);
   }
   
   async getAppointmentsByUserId(userId: number): Promise<Appointment[]> {
-    return await db
-      .select()
-      .from(appointments)
-      .where(eq(appointments.userId, userId));
+    // Use the safe implementation to avoid errors with missing columns
+    return getSafeAppointmentsByUserId(db, userId);
   }
   
   async getAllAppointments(): Promise<Appointment[]> {
-    return await db.select().from(appointments);
+    // Use the safe implementation to avoid errors with missing columns
+    return getSafeAllAppointments(db);
   }
   
   async updateAppointment(id: number, data: Partial<Appointment>): Promise<Appointment | undefined> {

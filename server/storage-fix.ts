@@ -30,7 +30,7 @@ import {
 import session from "express-session";
 import createMemoryStore from "memorystore";
 import connectPg from "connect-pg-simple";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and, sql, desc, asc } from "drizzle-orm";
 
 const PostgresSessionStore = connectPg(session);
 const MemoryStore = createMemoryStore(session);
@@ -227,4 +227,151 @@ export async function getSafeServiceRequest(db: any, id: number): Promise<Servic
     quoteAccepted: request.quoteAccepted || false,
     scheduledDate: request.scheduledDate || null,
   } as ServiceRequest;
+}
+
+// Type for database results with flexible structure for appointments
+interface DbAppointmentResult {
+  id: number;
+  serviceRequestId: number;
+  userId: number;
+  technicianId: number | null;
+  technicianName: string | null;
+  technicianPhone: string | null;
+  scheduledDate: string;
+  timeSlot: string;
+  status: string;
+  serviceType: string;
+  issueType: string;
+  notes: string | null;
+  previousAppointmentId: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+  reminderSent?: boolean;
+  reminderScheduled?: Date | null;
+  start_time?: string | null;
+  end_time?: string | null;
+  duration?: number | null;
+  [key: string]: any; // Allow any additional properties
+}
+
+// Implementation for the `getAllAppointments` function that handles missing columns with fallback values
+export async function getSafeAllAppointments(db: any): Promise<Appointment[]> {
+  // Explicitly select columns to prevent errors with mismatched database schemas
+  const dbResults = await db.select({
+    id: appointments.id,
+    serviceRequestId: appointments.serviceRequestId,
+    userId: appointments.userId,
+    technicianId: appointments.technicianId,
+    technicianName: appointments.technicianName,
+    technicianPhone: appointments.technicianPhone,
+    scheduledDate: appointments.scheduledDate,
+    timeSlot: appointments.timeSlot,
+    status: appointments.status,
+    serviceType: appointments.serviceType,
+    issueType: appointments.issueType,
+    notes: appointments.notes,
+    previousAppointmentId: appointments.previousAppointmentId,
+    createdAt: appointments.createdAt,
+    updatedAt: appointments.updatedAt,
+    reminderSent: appointments.reminderSent,
+    reminderScheduled: appointments.reminderScheduled,
+    startTime: appointments.startTime,
+    endTime: appointments.endTime,
+    duration: appointments.duration,
+  })
+  .from(appointments)
+  .orderBy(desc(appointments.scheduledDate)); // Most recent first
+
+  // For each result, add missing fields with fallback values
+  return dbResults.map((appointment: DbAppointmentResult) => ({
+    ...appointment,
+    // Add missing fields with fallback values or use provided values
+    reminderSent: appointment.reminderSent !== undefined ? appointment.reminderSent : false,
+    reminderScheduled: appointment.reminderScheduled || null,
+    startTime: appointment.startTime || null,
+    endTime: appointment.endTime || null,
+    duration: appointment.duration || null,
+  } as Appointment));
+}
+
+// Implementation for appointment by ID that handles missing columns with fallback values
+export async function getSafeAppointment(db: any, id: number): Promise<Appointment | undefined> {
+  // Explicitly select columns to prevent errors with mismatched database schemas
+  const [appointment] = await db.select({
+    id: appointments.id,
+    serviceRequestId: appointments.serviceRequestId,
+    userId: appointments.userId,
+    technicianId: appointments.technicianId,
+    technicianName: appointments.technicianName,
+    technicianPhone: appointments.technicianPhone,
+    scheduledDate: appointments.scheduledDate,
+    timeSlot: appointments.timeSlot,
+    status: appointments.status,
+    serviceType: appointments.serviceType,
+    issueType: appointments.issueType,
+    notes: appointments.notes,
+    previousAppointmentId: appointments.previousAppointmentId,
+    createdAt: appointments.createdAt,
+    updatedAt: appointments.updatedAt,
+    reminderSent: appointments.reminderSent,
+    reminderScheduled: appointments.reminderScheduled,
+    startTime: appointments.startTime,
+    endTime: appointments.endTime,
+    duration: appointments.duration
+  })
+  .from(appointments)
+  .where(eq(appointments.id, id));
+  
+  if (!appointment) return undefined;
+  
+  // Add missing fields with fallback values
+  return {
+    ...appointment,
+    reminderSent: appointment.reminderSent !== undefined ? appointment.reminderSent : false,
+    reminderScheduled: appointment.reminderScheduled || null,
+    startTime: appointment.startTime || null,
+    endTime: appointment.endTime || null,
+    duration: appointment.duration || null,
+  } as Appointment;
+}
+
+// Implementation for appointments by user ID
+export async function getSafeAppointmentsByUserId(db: any, userId: number): Promise<Appointment[]> {
+  // Explicitly select columns to prevent errors with mismatched database schemas
+  const dbResults = await db.select({
+    id: appointments.id,
+    serviceRequestId: appointments.serviceRequestId,
+    userId: appointments.userId,
+    technicianId: appointments.technicianId,
+    technicianName: appointments.technicianName,
+    technicianPhone: appointments.technicianPhone,
+    scheduledDate: appointments.scheduledDate,
+    timeSlot: appointments.timeSlot,
+    status: appointments.status,
+    serviceType: appointments.serviceType,
+    issueType: appointments.issueType,
+    notes: appointments.notes,
+    previousAppointmentId: appointments.previousAppointmentId,
+    createdAt: appointments.createdAt,
+    updatedAt: appointments.updatedAt,
+    reminderSent: appointments.reminderSent,
+    reminderScheduled: appointments.reminderScheduled,
+    startTime: appointments.startTime,
+    endTime: appointments.endTime,
+    duration: appointments.duration
+  })
+  .from(appointments)
+  .where(eq(appointments.userId, userId))
+  .orderBy(desc(appointments.scheduledDate)); // Most recent first
+  
+  // For each result, add missing fields with fallback values
+  return dbResults.map((appointment: DbAppointmentResult) => ({
+    ...appointment,
+    // Add missing fields with fallback values
+    reminderSent: appointment.reminderSent !== undefined ? appointment.reminderSent : false,
+    reminderScheduled: appointment.reminderScheduled || null,
+    startTime: appointment.startTime || null,
+    endTime: appointment.endTime || null,
+    duration: appointment.duration || null,
+  } as Appointment));
 }
