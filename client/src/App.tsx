@@ -11,7 +11,8 @@ import AccountSettings from "@/pages/account-settings";
 import { ProtectedRoute } from "./lib/protected-route";
 import Navbar from "./components/layout/navbar";
 import Footer from "./components/layout/footer";
-import React from "react";
+import { Suspense, lazy } from "react";
+import { Loader2 } from "lucide-react";
 
 // Fix Account Settings component wrapper for protected route
 const AccountSettingsWrapper = () => <AccountSettings />;

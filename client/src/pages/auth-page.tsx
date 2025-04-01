@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useAuth } from "@/hooks/use-auth";
+import { useState, useEffect, useContext } from "react";
+import { AuthContext } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -34,7 +34,11 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
 const AuthPage = () => {
-  const { user, loginMutation, registerMutation } = useAuth();
+  const authContext = useContext(AuthContext);
+  const user = authContext?.user ?? null;
+  const loginMutation = authContext?.loginMutation;
+  const registerMutation = authContext?.registerMutation;
+  
   const [activeTab, setActiveTab] = useState<string>("login");
   const [_, navigate] = useLocation();
 
@@ -75,17 +79,21 @@ const AuthPage = () => {
 
   // Login form submit handler
   const onLoginSubmit = (values: LoginFormValues) => {
-    loginMutation.mutate(values);
+    if (loginMutation && typeof loginMutation.mutate === 'function') {
+      loginMutation.mutate(values);
+    }
   };
 
   // Register form submit handler
   const onRegisterSubmit = (values: RegisterFormValues) => {
-    // Omit confirmPassword as it's not part of the schema
-    const { confirmPassword, ...registrationData } = values;
-    registerMutation.mutate({
-      ...registrationData,
-      role: "client", // Default role is client
-    });
+    if (registerMutation && typeof registerMutation.mutate === 'function') {
+      // Omit confirmPassword as it's not part of the schema
+      const { confirmPassword, ...registrationData } = values;
+      registerMutation.mutate({
+        ...registrationData,
+        role: "client", // Default role is client
+      });
+    }
   };
 
   return (
@@ -149,9 +157,9 @@ const AuthPage = () => {
                       <Button 
                         type="submit" 
                         className="w-full" 
-                        disabled={loginMutation.isPending}
+                        disabled={loginMutation?.isPending}
                       >
-                        {loginMutation.isPending ? (
+                        {loginMutation?.isPending ? (
                           <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                             Logging in...
@@ -278,9 +286,9 @@ const AuthPage = () => {
                       <Button 
                         type="submit" 
                         className="w-full"
-                        disabled={registerMutation.isPending}
+                        disabled={registerMutation?.isPending}
                       >
-                        {registerMutation.isPending ? (
+                        {registerMutation?.isPending ? (
                           <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                             Creating account...

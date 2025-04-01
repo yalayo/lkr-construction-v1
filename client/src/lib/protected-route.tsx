@@ -1,6 +1,7 @@
-import { useAuth } from "@/hooks/use-auth";
+import { AuthContext } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
 import { Redirect, Route } from "wouter";
+import { useContext } from "react";
 import type { ReactElement } from "react";
 
 export function ProtectedRoute({
@@ -10,9 +11,11 @@ export function ProtectedRoute({
   path: string;
   component: () => ReactElement;
 }) {
-  const { user, isLoading } = useAuth();
-
-  if (isLoading) {
+  // Use the auth context directly with safe fallbacks
+  const authContext = useContext(AuthContext);
+  
+  // Show loading if context isn't ready or explicitly loading
+  if (!authContext || authContext.isLoading) {
     return (
       <Route path={path}>
         {() => (
@@ -24,7 +27,8 @@ export function ProtectedRoute({
     );
   }
 
-  if (!user) {
+  // Redirect to auth if no user
+  if (!authContext.user) {
     return (
       <Route path={path}>
         {() => <Redirect to="/auth" />}
@@ -32,5 +36,6 @@ export function ProtectedRoute({
     );
   }
 
+  // If everything is ok, render the component
   return <Route path={path} component={Component} />;
 }
