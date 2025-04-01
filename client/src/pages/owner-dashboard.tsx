@@ -66,10 +66,13 @@ const ServiceRequestCard = ({ request }: { request: ServiceRequest }) => {
     mutationFn: async (values: QuoteFormValues) => {
       // Convert input values to appropriate types
       const data = {
+        serviceRequestId: request.id, // Add the serviceRequestId field
         amount: parseFloat(values.amount),
         notes: values.notes,
         expiryDays: parseInt(values.expiryDays)
       };
+      
+      console.log('Submitting quote data:', data);
       
       const response = await apiRequest(
         "POST", 

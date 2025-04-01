@@ -132,8 +132,12 @@ export function setupServiceRequestRoutes(app: Express) {
         return res.status(400).send("Invalid service request ID");
       }
       
+      // Add serviceRequestId to the request body if it's not already included
+      const requestData = { ...req.body, serviceRequestId };
+      console.log('Quote submission data:', requestData);
+      
       // Validate the quote submission data
-      const quoteData = quoteSubmissionSchema.parse(req.body);
+      const quoteData = quoteSubmissionSchema.parse(requestData);
       
       // Get the service request
       const serviceRequest = await storage.getServiceRequest(serviceRequestId);
