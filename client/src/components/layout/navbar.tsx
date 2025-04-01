@@ -1,8 +1,8 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Zap, Droplet, Menu, X, User, LogOut, Settings, HelpCircle } from "lucide-react";
-import { useState, useContext } from "react";
-import { AuthContext } from "@/hooks/use-auth";
+import { useState } from "react";
+import { useAuth } from "@/hooks/use-auth";
 import { useOnboarding } from "@/contexts/onboarding-context";
 import {
   DropdownMenu,
@@ -16,10 +16,10 @@ import { useToast } from "@/hooks/use-toast";
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  // Use context but handle case when it might be null (during app initial loading)
-  const authContext = useContext(AuthContext);
-  const user = authContext?.user ?? null;
-  const logoutMutation = authContext?.logoutMutation;
+  // Use the useAuth hook to get authentication data
+  const auth = useAuth();
+  const user = auth.user;
+  const logoutMutation = auth.logoutMutation;
   
   // Access onboarding context
   const { openOnboarding } = useOnboarding();

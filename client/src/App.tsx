@@ -10,31 +10,17 @@ import AccountSettings from "@/pages/account-settings";
 import { ProtectedRoute } from "./lib/protected-route";
 import Navbar from "./components/layout/navbar";
 import Footer from "./components/layout/footer";
-import { Suspense, lazy, useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { OnboardingWizard } from "./components/onboarding/onboarding-wizard";
 import { useAuth } from "./hooks/use-auth";
 import { useOnboarding } from "./contexts/onboarding-context";
 
-// Fix Account Settings component wrapper for protected route
+// Simple component wrappers for protected routes
 const AccountSettingsWrapper = () => <AccountSettings />;
 const ClientDashboardWrapper = () => <ClientDashboard />;
 const OwnerDashboardWrapper = () => <OwnerDashboard />;
 const AdminDashboardWrapper = () => <AdminDashboard />;
-
-function Router() {
-  return (
-    <Switch>
-      <Route path="/" component={HomePage} />
-      <Route path="/auth" component={AuthPage} />
-      <ProtectedRoute path="/client-dashboard" component={ClientDashboardWrapper} />
-      <ProtectedRoute path="/owner-dashboard" component={OwnerDashboardWrapper} />
-      <ProtectedRoute path="/admin-dashboard" component={AdminDashboardWrapper} />
-      <ProtectedRoute path="/account-settings" component={AccountSettingsWrapper} />
-      <Route component={NotFound} />
-    </Switch>
-  );
-}
 
 // Simple onboarding component to show the wizard
 function OnboardingIntegration() {
@@ -61,11 +47,30 @@ function OnboardingIntegration() {
 }
 
 function App() {
+  const { isLoading } = useAuth();
+  
+  // If authentication is loading, show a loading indicator
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-border" />
+      </div>
+    );
+  }
+  
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
       <main className="flex-grow">
-        <Router />
+        <Switch>
+          <Route path="/" component={HomePage} />
+          <Route path="/auth" component={AuthPage} />
+          <ProtectedRoute path="/client-dashboard" component={ClientDashboardWrapper} />
+          <ProtectedRoute path="/owner-dashboard" component={OwnerDashboardWrapper} />
+          <ProtectedRoute path="/admin-dashboard" component={AdminDashboardWrapper} />
+          <ProtectedRoute path="/account-settings" component={AccountSettingsWrapper} />
+          <Route component={NotFound} />
+        </Switch>
       </main>
       <Footer />
       <OnboardingIntegration />
