@@ -1,0 +1,102 @@
+# Product Requirements Document (PRD)
+
+## System: Electricity and Plumbing Service Request Management
+
+**Location: Lake Charles, Louisiana**
+
+### 1. Overview
+This system is designed to streamline the management of electricity and plumbing service requests from customers. It provides an intuitive interface for customers to request services, a lead management system, automated SMS notifications, scheduling functionality, and a basic accounting system. Different user roles will have customized dashboards for their respective functionalities.
+
+---
+
+## 2. Features and Requirements
+
+### **2.1 Customer Service Request Portal**
+- Customers should land on a web page where they can:
+  - Select the type of service: **Electricity, Plumbing, or Both**.
+  - Answer a set of predefined questions to help generate a quote.
+  - Enter their **name and phone number** for contact purposes.
+- Upon submission, the request should be added to the lead management system.
+
+---
+
+### **2.2 Lead Management System**
+- Store all incoming service requests as **leads**.
+- Leads should be **ordered by First-In-First-Serve (FIFO)**.
+- For leads created on the same day, prioritize those with the **highest potential price**.
+
+---
+
+### **2.3 Automated Customer SMS & Scheduling System**
+- Integrate **Twilio** for automated SMS notifications.
+- Once a lead is registered, the system should:
+  - Send an SMS with a **link to the customer's profile**.
+  - Allow the customer to select an **available date and time range** for service provision.
+  - Notify the business owner when a customer schedules an appointment.
+
+---
+
+### **2.4 Accounting System**
+- Implement a small **custom accounting module** to track:
+  - **Income:** Payments received from customers.
+  - **Expenses:** Business operational costs.
+- Provide **basic financial reporting** on profits and losses.
+
+---
+
+### **2.5 User Roles & Dashboards**
+
+#### **2.5.1 Client Dashboard**
+- After login, customers should see:
+  - **Service appointment details** (date, time, assigned technician).
+  - **Status updates** on their service request.
+  - A history of previous service requests.
+
+#### **2.5.2 Owner Dashboard**
+- Provide insights to optimize business operations, including:
+  - **Lead management metrics** (number of leads, conversion rates, etc.).
+  - **Revenue & expense reports**.
+  - **Technician assignment status**.
+  - **Pending & completed service requests**.
+
+#### **2.5.3 System Admin Dashboard**
+- Implement data management functionalities:
+  - **Export and import system data** (CSV, JSON, or other formats).
+  - **User account management**.
+  - **System settings & configurations**.
+
+---
+
+## 3. Technical Requirements
+- **Frontend:** React.js or Vue.js.
+- **Backend:** Node.js with Express or Django/Python.
+- **Database:** PostgreSQL or MongoDB.
+- **Authentication:** JWT-based login.
+- **Third-party Integrations:**
+  - **Twilio** for SMS notifications.
+  - **Stripe or PayPal** for payments.
+- **Hosting:** AWS, Firebase, or Digital Ocean.
+
+---
+
+## 4. Success Metrics
+- **Customer Engagement:** Number of service requests submitted.
+- **Conversion Rate:** Percentage of leads converted to paid jobs.
+- **Service Efficiency:** Average time taken from request submission to job completion.
+- **Financial Performance:** Revenue vs. expenses.
+
+---
+
+## 5. Future Enhancements (Post MVP)
+- **Technician Portal** for tracking jobs and updating job status.
+- **Mobile App** for customers and technicians.
+- **AI-based pricing engine** to optimize quoting.
+
+---
+
+### **Approval & Sign-off**
+**Prepared by:** [Your Name]  
+**Date:** [Date]  
+**Approved by:** [Stakeholder Name]  
+**Version:** 1.0
+
