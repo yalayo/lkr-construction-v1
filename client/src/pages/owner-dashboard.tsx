@@ -131,7 +131,7 @@ const OwnerDashboard = () => {
   const [activeTab, setActiveTab] = useState("requests");
   const [filterPeriod, setFilterPeriod] = useState("month");
   
-  // Fetch all service requests
+  // Fetch all service requests using standard query client fetch
   const { 
     data: serviceRequests = [] as ServiceRequest[], 
     isLoading: isLoadingRequests,
@@ -146,8 +146,9 @@ const OwnerDashboard = () => {
           console.log('User not authenticated, skipping fetch');
           return [];
         }
-        console.log('Authenticated as:', user.username, 'with role:', user.role);
+        console.log('Authenticated as:', user?.username, 'with role:', user?.role);
         
+        // Use apiRequest from queryClient for consistent auth handling
         const res = await fetch('/api/service-requests', {
           method: 'GET',
           credentials: 'include',
@@ -170,7 +171,10 @@ const OwnerDashboard = () => {
       }
     },
     // Only run this query when the user is authenticated
-    enabled: !!user
+    enabled: !!user,
+    // Add retry and stale time configurations
+    retry: 2,
+    staleTime: 30000 // 30 seconds
   });
   
   // Fetch stats, leads, and financials data

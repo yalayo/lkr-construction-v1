@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { Toaster } from "@/components/ui/toaster";
 import NotFound from "@/pages/not-found";
 import HomePage from "@/pages/home-page";
@@ -47,7 +47,7 @@ function OnboardingIntegration() {
 }
 
 function App() {
-  const { isLoading } = useAuth();
+  const { user, isLoading } = useAuth();
   
   // If authentication is loading, show a loading indicator
   if (isLoading) {
@@ -58,13 +58,37 @@ function App() {
     );
   }
   
+  console.log("App rendering with authentication state:", user ? "authenticated" : "not authenticated");
+  
+  const [, setLocation] = useLocation();
+  
+  // Create a wrapped AuthPage component that redirects if user is logged in
+  const AuthPageWithRedirect = () => {
+    useEffect(() => {
+      if (user) {
+        console.log("Auth page: User already logged in as:", user?.role);
+        // Redirect to the appropriate dashboard
+        if (user.role === "owner") {
+          setLocation("/owner-dashboard");
+        } else if (user.role === "admin") {
+          setLocation("/admin-dashboard");
+        } else {
+          setLocation("/client-dashboard");
+        }
+      }
+    }, [user]);
+    
+    // Render the auth page (will redirect via effect if needed)
+    return <AuthPage />;
+  };
+  
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
       <main className="flex-grow">
         <Switch>
           <Route path="/" component={HomePage} />
-          <Route path="/auth" component={AuthPage} />
+          <Route path="/auth" component={AuthPageWithRedirect} />
           <ProtectedRoute path="/client-dashboard" component={ClientDashboardWrapper} />
           <ProtectedRoute path="/owner-dashboard" component={OwnerDashboardWrapper} />
           <ProtectedRoute path="/admin-dashboard" component={AdminDashboardWrapper} />
