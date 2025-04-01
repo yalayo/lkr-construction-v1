@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSearch } from "wouter";
+import { useSearch, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
@@ -19,6 +19,7 @@ const steps = [
 
 const RequestService = () => {
   const search = useSearch();
+  const [, navigate] = useLocation();
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -87,9 +88,29 @@ const RequestService = () => {
   };
 
   const handleSubmit = async () => {
+    // Validate that all required fields are filled
+    if (!formData.serviceType || !formData.issueType || !formData.urgency || 
+        !formData.propertyType || !formData.name || !formData.phone || 
+        !formData.email || !formData.address) {
+      toast({
+        title: "Missing information",
+        description: "Please ensure all required fields are filled in",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setIsSubmitting(true);
     try {
-      await apiRequest("POST", "/api/service-requests", formData);
+      console.log("Submitting service request:", formData);
+      const response = await apiRequest("POST", "/api/service-requests", formData);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to submit service request");
+      }
+      
+      // Success - show toast and redirect
       toast({
         title: "Service request submitted successfully!",
         description: "We'll contact you shortly to confirm your appointment.",
@@ -113,8 +134,13 @@ const RequestService = () => {
         preferredDate: "",
         preferredTime: "",
       });
-      setCurrentStep(1);
+      
+      // Redirect to home page after a short delay to let the user see the success message
+      setTimeout(() => {
+        navigate('/');
+      }, 2000);
     } catch (error) {
+      console.error("Error submitting service request:", error);
       toast({
         title: "Error submitting request",
         description: error instanceof Error ? error.message : "Please try again later",
@@ -213,7 +239,7 @@ const RequestService = () => {
                 type="button" 
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                className="bg-primary-500 hover:bg-primary-600"
+                className="bg-primary-500 hover:bg-primary-600 text-white"
               >
                 {isSubmitting ? "Submitting..." : "Submit Request"}
               </Button>

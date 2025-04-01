@@ -134,12 +134,33 @@ export class DatabaseStorage implements IStorage {
 
   // Service Request methods
   async createServiceRequest(request: InsertServiceRequest): Promise<ServiceRequest> {
-    const [serviceRequest] = await db
-      .insert(serviceRequests)
-      .values({ ...request, status: "new" })
-      .returning();
-    
-    return serviceRequest;
+    try {
+      // Insert directly without creating an intermediate object
+      const [serviceRequest] = await db
+        .insert(serviceRequests)
+        .values({
+          name: request.name,
+          email: request.email,
+          phone: request.phone,
+          serviceType: request.serviceType,
+          issueType: request.issueType,
+          urgency: request.urgency,
+          propertyType: request.propertyType,
+          address: request.address,
+          status: "new",
+          description: request.description || null,
+          previousIssue: request.previousIssue === undefined ? false : request.previousIssue,
+          preferredDate: request.preferredDate || null,
+          preferredTime: request.preferredTime || null,
+          userId: ('userId' in request) ? request.userId : null
+        })
+        .returning();
+      
+      return serviceRequest;
+    } catch (error) {
+      console.error("Error creating service request:", error);
+      throw error;
+    }
   }
   
   async getServiceRequest(id: number): Promise<ServiceRequest | undefined> {
@@ -388,22 +409,28 @@ export class MemStorage implements IStorage {
     const id = this.currentId.serviceRequests++;
     const createdAt = new Date();
     const updatedAt = new Date();
-    const status = "new";
     
-    // Add required fields with default values for memory storage
-    const serviceRequest: ServiceRequest = { 
-      ...request, 
-      id, 
-      status,
-      createdAt, 
+    // Ensure all required fields are present with appropriate defaults
+    const serviceRequest: ServiceRequest = {
+      id,
+      name: request.name,
+      email: request.email,
+      phone: request.phone,
+      serviceType: request.serviceType,
+      issueType: request.issueType,
+      urgency: request.urgency,
+      propertyType: request.propertyType,
+      address: request.address,
+      status: "new",
+      createdAt,
       updatedAt,
-      // Provide default values for required fields
-      userId: request.userId || null,
+      userId: ('userId' in request) ? request.userId : null,
       technicianId: null,
       technicianName: null,
       cost: null,
       notes: null,
       description: request.description || null,
+      previousIssue: request.previousIssue ?? false,
       preferredDate: request.preferredDate || null,
       preferredTime: request.preferredTime || null,
       completedDate: null

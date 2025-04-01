@@ -37,11 +37,11 @@ const ServiceType = ({ formData, updateFormData }: ServiceTypeProps) => {
             htmlFor="electrical"
             className={`cursor-pointer flex flex-col items-center justify-center p-6 border-2 rounded-lg transition-all hover:border-primary-300 hover:bg-primary-50 ${
               formData.serviceType === "electrical"
-                ? "border-primary bg-primary-50"
+                ? "border-primary-500 bg-primary-50"
                 : "border-neutral-200"
             }`}
           >
-            <div className="service-icon mb-3 h-16 w-16 rounded-full bg-primary-100 flex items-center justify-center text-primary">
+            <div className="service-icon mb-3 h-16 w-16 rounded-full bg-primary-100 flex items-center justify-center text-primary-500">
               <Zap className="h-8 w-8" />
             </div>
             <div className="text-center">
@@ -94,7 +94,7 @@ const ServiceType = ({ formData, updateFormData }: ServiceTypeProps) => {
             }`}
           >
             <div className="service-icon mb-3 flex">
-              <div className="h-16 w-16 rounded-full bg-primary-100 flex items-center justify-center text-primary -mr-3 z-10">
+              <div className="h-16 w-16 rounded-full bg-primary-100 flex items-center justify-center text-primary-500 -mr-3 z-10">
                 <Zap className="h-8 w-8" />
               </div>
               <div className="h-16 w-16 rounded-full bg-secondary-100 flex items-center justify-center text-secondary-500">
