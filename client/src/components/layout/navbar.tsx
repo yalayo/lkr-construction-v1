@@ -150,7 +150,7 @@ const Navbar = () => {
                 <Link href="/auth">
                   <Button variant="outline" className="mr-2">Log in</Button>
                 </Link>
-                <Link href="/request-service">
+                <Link href="/">
                   <Button>Get Started</Button>
                 </Link>
               </>
@@ -177,7 +177,7 @@ const Navbar = () => {
                   Home
                 </span>
               </Link>
-              <Link href="/request-service">
+              <Link href="/">
                 <span className="block px-3 py-2 rounded-md text-base font-medium text-neutral-700 hover:bg-neutral-50">
                   Request Service
                 </span>
