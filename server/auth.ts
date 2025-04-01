@@ -39,13 +39,14 @@ export function setupAuth(app: Express) {
   
   const sessionSettings: session.SessionOptions = {
     secret: sessionSecret,
-    resave: false,
-    saveUninitialized: false,
+    resave: true,
+    saveUninitialized: true,
     store: storage.sessionStore,
     cookie: {
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      secure: process.env.NODE_ENV === "production",
+      secure: false, // Set to false for development
       sameSite: "lax",
+      httpOnly: true
     }
   };
 
@@ -165,7 +166,16 @@ export function setupAuth(app: Express) {
   });
 
   app.get("/api/user", (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
+    console.log("GET /api/user - Session ID:", req.sessionID);
+    console.log("GET /api/user - isAuthenticated:", req.isAuthenticated());
+    console.log("GET /api/user - Session:", req.session);
+    
+    if (!req.isAuthenticated()) {
+      console.log("GET /api/user - Not authenticated, sending 401");
+      return res.sendStatus(401);
+    }
+    
+    console.log("GET /api/user - User found:", req.user?.username);
     
     // Remove the password from the response
     const { password, ...userWithoutPassword } = req.user;

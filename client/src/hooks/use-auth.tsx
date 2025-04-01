@@ -1,11 +1,10 @@
-import { createContext, ReactNode, useContext } from "react";
+import { createContext, ReactNode, useContext, useState, useEffect } from "react";
 import {
-  useQuery,
   useMutation,
   UseMutationResult,
 } from "@tanstack/react-query";
 import { insertUserSchema, User as SelectUser, InsertUser } from "@shared/schema";
-import { getQueryFn, apiRequest, queryClient } from "../lib/queryClient";
+import { queryClient } from "../lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 
@@ -24,15 +23,48 @@ export const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   const [_, setLocation] = useLocation();
+  
+  // Manage user state directly
+  const [user, setUser] = useState<SelectUser | null>(null);
+  const [error, setError] = useState<Error | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  const {
-    data: user,
-    error,
-    isLoading,
-  } = useQuery<SelectUser | null, Error>({
-    queryKey: ["/api/user"],
-    queryFn: getQueryFn({ on401: "returnNull" }),
-  });
+  // Fetch user on initial load
+  useEffect(() => {
+    async function fetchUser() {
+      try {
+        setIsLoading(true);
+        console.log("Fetching current user data...");
+        
+        const res = await fetch("/api/user", {
+          credentials: "include" // Important for cookies
+        });
+        
+        if (!res.ok) {
+          if (res.status === 401) {
+            console.log("User not authenticated");
+            setUser(null);
+            return;
+          }
+          
+          const errText = await res.text();
+          console.error("Error fetching user:", errText);
+          throw new Error(errText || "Failed to fetch user");
+        }
+        
+        const userData = await res.json();
+        console.log("User data fetched successfully:", userData);
+        setUser(userData);
+      } catch (err) {
+        console.error("Error in fetchUser:", err);
+        setError(err instanceof Error ? err : new Error(String(err)));
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    
+    fetchUser();
+  }, []);
 
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginData) => {
@@ -61,22 +93,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw error;
       }
     },
-    onSuccess: (user: SelectUser) => {
-      console.log("Login mutation success, setting user data in cache");
-      queryClient.setQueryData(["/api/user"], user);
+    onSuccess: (userData: SelectUser) => {
+      console.log("Login mutation success, setting user data");
+      // Update both the local state and the query cache
+      setUser(userData);
+      queryClient.setQueryData(["/api/user"], userData);
+      
       toast({
         title: "Login successful",
-        description: `Welcome back, ${user.name}!`,
+        description: `Welcome back, ${userData.name}!`,
       });
       
-      console.log("Redirecting based on role:", user.role);
-      // Redirect based on role
-      if (user.role === "client") {
-        setLocation("/client-dashboard");
-      } else if (user.role === "owner") {
-        setLocation("/owner-dashboard");
-      } else if (user.role === "admin") {
-        setLocation("/admin-dashboard");
+      console.log("Redirecting based on role:", userData.role);
+      // Use direct window navigation instead of React Router
+      if (userData.role === "client") {
+        window.location.href = "/client-dashboard";
+      } else if (userData.role === "owner") {
+        window.location.href = "/owner-dashboard";
+      } else if (userData.role === "admin") {
+        window.location.href = "/admin-dashboard";
       }
     },
     onError: (error: Error) => {
@@ -111,16 +146,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.log("Registration successful, user data:", userData);
       return userData;
     },
-    onSuccess: (user: SelectUser) => {
-      console.log("Registration mutation success, setting user data in cache");
-      queryClient.setQueryData(["/api/user"], user);
+    onSuccess: (userData: SelectUser) => {
+      console.log("Registration mutation success, setting user data");
+      // Update both the local state and the query cache
+      setUser(userData);
+      queryClient.setQueryData(["/api/user"], userData);
+      
       toast({
         title: "Registration successful",
-        description: `Welcome, ${user.name}!`,
+        description: `Welcome, ${userData.name}!`,
       });
       
-      // Redirect to client dashboard for new users
-      setLocation("/client-dashboard");
+      // Use direct window navigation for new users
+      window.location.href = "/client-dashboard";
     },
     onError: (error: Error) => {
       console.error("Registration mutation error handler:", error);
@@ -149,12 +187,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.log("Logout successful");
     },
     onSuccess: () => {
-      console.log("Logout mutation success, clearing user data from cache");
+      console.log("Logout mutation success, clearing user data");
+      // Update both the local state and the query cache
+      setUser(null);
       queryClient.setQueryData(["/api/user"], null);
+      
       toast({
         title: "Logged out successfully",
       });
-      setLocation("/");
+      
+      // Use direct window navigation
+      window.location.href = "/";
     },
     onError: (error: Error) => {
       console.error("Logout mutation error handler:", error);
