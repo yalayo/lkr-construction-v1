@@ -8,7 +8,6 @@ import ServiceDetails from "@/components/service-request/service-details";
 import ContactInfo from "@/components/service-request/contact-info";
 import Confirm from "@/components/service-request/confirm";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/use-auth";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
 const steps = [
@@ -20,7 +19,6 @@ const steps = [
 
 const RequestService = () => {
   const search = useSearch();
-  const { user } = useAuth();
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -30,9 +28,9 @@ const RequestService = () => {
     propertyType: "",
     description: "",
     previousIssue: false,
-    name: user?.name || "",
-    phone: user?.phone || "",
-    email: user?.email || "",
+    name: "",
+    phone: "",
+    email: "",
     address: "",
     preferredDate: "",
     preferredTime: "",
@@ -108,9 +106,9 @@ const RequestService = () => {
         propertyType: "",
         description: "",
         previousIssue: false,
-        name: user?.name || "",
-        phone: user?.phone || "",
-        email: user?.email || "",
+        name: "",
+        phone: "",
+        email: "",
         address: "",
         preferredDate: "",
         preferredTime: "",

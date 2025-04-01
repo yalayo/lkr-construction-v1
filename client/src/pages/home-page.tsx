@@ -110,7 +110,7 @@ const HomePage = () => {
             
             {/* Plumbing Services */}
             <Card className="overflow-hidden border-0 shadow-lg">
-              <div className="bg-secondary-500 p-4 text-white">
+              <div className="bg-blue-600 p-4 text-white">
                 <div className="flex items-center">
                   <Droplet className="h-6 w-6 mr-2" />
                   <h3 className="text-xl font-semibold">Plumbing Services</h3>
@@ -119,32 +119,32 @@ const HomePage = () => {
               <CardContent className="p-6">
                 <ul className="space-y-3">
                   <li className="flex items-center">
-                    <CheckCircle className="h-5 w-5 text-secondary-500 mr-2" />
+                    <CheckCircle className="h-5 w-5 text-blue-600 mr-2" />
                     <span>Drain cleaning & unclogging</span>
                   </li>
                   <li className="flex items-center">
-                    <CheckCircle className="h-5 w-5 text-secondary-500 mr-2" />
+                    <CheckCircle className="h-5 w-5 text-blue-600 mr-2" />
                     <span>Faucet & fixture repairs</span>
                   </li>
                   <li className="flex items-center">
-                    <CheckCircle className="h-5 w-5 text-secondary-500 mr-2" />
+                    <CheckCircle className="h-5 w-5 text-blue-600 mr-2" />
                     <span>Toilet repairs & installations</span>
                   </li>
                   <li className="flex items-center">
-                    <CheckCircle className="h-5 w-5 text-secondary-500 mr-2" />
+                    <CheckCircle className="h-5 w-5 text-blue-600 mr-2" />
                     <span>Water heater services</span>
                   </li>
                   <li className="flex items-center">
-                    <CheckCircle className="h-5 w-5 text-secondary-500 mr-2" />
+                    <CheckCircle className="h-5 w-5 text-blue-600 mr-2" />
                     <span>Pipe repair & replacement</span>
                   </li>
                   <li className="flex items-center">
-                    <CheckCircle className="h-5 w-5 text-secondary-500 mr-2" />
+                    <CheckCircle className="h-5 w-5 text-blue-600 mr-2" />
                     <span>Leak detection & repair</span>
                   </li>
                 </ul>
                 <Link href="/request-service?type=plumbing">
-                  <Button className="w-full mt-6 bg-secondary-500 hover:bg-secondary-600">
+                  <Button className="w-full mt-6 bg-blue-600 hover:bg-blue-700">
                     Request Plumbing Service
                   </Button>
                 </Link>
@@ -154,7 +154,7 @@ const HomePage = () => {
           
           <div className="text-center">
             <Link href="/request-service?type=both">
-              <Button size="lg" className="bg-gradient-to-r from-primary-500 to-secondary-500">
+              <Button size="lg" className="bg-gradient-to-r from-primary-500 to-blue-600 text-white">
                 Request Both Services
               </Button>
             </Link>
@@ -207,7 +207,7 @@ const HomePage = () => {
       </section>
       
       {/* Call to Action */}
-      <section className="py-16 bg-gradient-to-r from-primary-600 to-secondary-600 text-white" id="contact">
+      <section className="py-16 bg-gradient-to-r from-primary-600 to-blue-600 text-white" id="contact">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
           <p className="text-xl mb-8 max-w-3xl mx-auto">
