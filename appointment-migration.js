@@ -42,6 +42,9 @@ async function migrateAppointmentsTable() {
     await addColumnIfNotExists('appointments', 'start_time', 'TEXT');
     await addColumnIfNotExists('appointments', 'end_time', 'TEXT');
     await addColumnIfNotExists('appointments', 'duration', 'INTEGER');
+    await addColumnIfNotExists('appointments', 'previous_appointment_id', 'INTEGER');
+    await addColumnIfNotExists('appointments', 'reminder_sent', 'BOOLEAN', 'false');
+    await addColumnIfNotExists('appointments', 'reminder_scheduled', 'TIMESTAMP');
     
     console.log('Appointments table migration completed successfully.');
   } catch (error) {

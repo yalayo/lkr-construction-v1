@@ -243,13 +243,13 @@ interface DbAppointmentResult {
   serviceType: string;
   issueType: string;
   notes: string | null;
-  previousAppointmentId: number | null;
+  previousAppointmentId?: number | null;
   createdAt: Date;
   updatedAt: Date;
   reminderSent?: boolean;
   reminderScheduled?: Date | null;
-  start_time?: string | null;
-  end_time?: string | null;
+  startTime?: string | null;
+  endTime?: string | null;
   duration?: number | null;
   [key: string]: any; // Allow any additional properties
 }
@@ -291,6 +291,7 @@ export async function getSafeAllAppointments(db: any): Promise<Appointment[]> {
     startTime: appointment.startTime || null,
     endTime: appointment.endTime || null,
     duration: appointment.duration || null,
+    previousAppointmentId: appointment.previousAppointmentId || null,
   } as Appointment));
 }
 
@@ -332,6 +333,7 @@ export async function getSafeAppointment(db: any, id: number): Promise<Appointme
     startTime: appointment.startTime || null,
     endTime: appointment.endTime || null,
     duration: appointment.duration || null,
+    previousAppointmentId: appointment.previousAppointmentId || null,
   } as Appointment;
 }
 
@@ -373,5 +375,6 @@ export async function getSafeAppointmentsByUserId(db: any, userId: number): Prom
     startTime: appointment.startTime || null,
     endTime: appointment.endTime || null,
     duration: appointment.duration || null,
+    previousAppointmentId: appointment.previousAppointmentId || null,
   } as Appointment));
 }
