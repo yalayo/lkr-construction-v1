@@ -6,6 +6,7 @@ import AuthPage from "@/pages/auth-page";
 import ClientDashboard from "@/pages/client-dashboard";
 import OwnerDashboard from "@/pages/owner-dashboard";
 import AdminDashboard from "@/pages/admin-dashboard";
+import TechnicianDashboard from "@/pages/technician-dashboard";
 import AccountSettings from "@/pages/account-settings";
 import QuoteAccepted from "@/pages/quote-accepted";
 import InventoryManagement from "@/pages/inventory-management";
@@ -23,6 +24,7 @@ const AccountSettingsWrapper = () => <AccountSettings />;
 const ClientDashboardWrapper = () => <ClientDashboard />;
 const OwnerDashboardWrapper = () => <OwnerDashboard />;
 const AdminDashboardWrapper = () => <AdminDashboard />;
+const TechnicianDashboardWrapper = () => <TechnicianDashboard />;
 const InventoryManagementWrapper = () => <InventoryManagement />;
 
 // Simple onboarding component to show the wizard
@@ -75,6 +77,8 @@ function App() {
           setLocation("/owner-dashboard");
         } else if (user.role === "admin") {
           setLocation("/admin-dashboard");
+        } else if (user.role === "technician") {
+          setLocation("/technician-dashboard");
         } else {
           setLocation("/client-dashboard");
         }
@@ -96,6 +100,7 @@ function App() {
           <ProtectedRoute path="/client-dashboard" component={ClientDashboardWrapper} />
           <ProtectedRoute path="/owner-dashboard" component={OwnerDashboardWrapper} />
           <ProtectedRoute path="/admin-dashboard" component={AdminDashboardWrapper} />
+          <ProtectedRoute path="/technician-dashboard" component={TechnicianDashboardWrapper} />
           <ProtectedRoute path="/inventory" component={InventoryManagementWrapper} />
           <ProtectedRoute path="/account-settings" component={AccountSettingsWrapper} />
           <Route component={NotFound} />

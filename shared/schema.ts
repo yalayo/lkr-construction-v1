@@ -43,6 +43,12 @@ export const serviceRequests = pgTable("service_requests", {
   quoteNotes: text("quote_notes"),
   quoteToken: text("quote_token"),  
   quoteAcceptedDate: timestamp("quote_accepted_date"),
+  completionNotes: text("completion_notes"),
+  materialUsed: text("material_used"),
+  completionDate: timestamp("completion_date"),
+  priority: integer("priority").default(0), // calculated priority based on urgency, etc.
+  quoteAccepted: boolean("quote_accepted").default(false),
+  scheduledDate: text("scheduled_date"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -132,6 +138,12 @@ export const insertServiceRequestSchema = createInsertSchema(serviceRequests).om
   quoteNotes: true,
   quoteToken: true,
   quoteAcceptedDate: true,
+  completionNotes: true,
+  materialUsed: true,
+  completionDate: true,
+  priority: true,
+  quoteAccepted: true,
+  scheduledDate: true,
   createdAt: true,
   updatedAt: true,
 });
