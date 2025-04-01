@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/use-auth";
@@ -10,22 +9,68 @@ import { Loader2 } from "lucide-react";
 const ClientDashboard = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("upcoming");
+  const [isLoading, setIsLoading] = useState(true);
+  const [appointments, setAppointments] = useState<any[]>([]);
+  const [serviceRequests, setServiceRequests] = useState<any[]>([]);
   
-  const { data: appointments, isLoading: isLoadingAppointments } = useQuery({
-    queryKey: ['/api/appointments'],
-  });
-  
-  const { data: serviceRequests, isLoading: isLoadingHistory } = useQuery({
-    queryKey: ['/api/service-requests/history'],
-  });
+  useEffect(() => {
+    // In a production environment, we would fetch this data from the API
+    // For now, we'll use mock data
+    setTimeout(() => {
+      const mockAppointments = [
+        {
+          id: 1,
+          scheduledDate: new Date().toISOString().split('T')[0],
+          timeSlot: "10:00 AM - 12:00 PM",
+          status: "scheduled",
+          serviceType: "Electricity",
+          issueType: "Circuit Breaker Repair",
+          technicianName: "John Smith",
+          technicianPhone: "(555) 123-4567",
+          notes: "Please ensure access to the electrical panel",
+          createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      ];
+      
+      const mockServiceHistory = [
+        {
+          id: 101,
+          serviceType: "Plumbing",
+          issueType: "Pipe Leak",
+          status: "completed",
+          createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+          completedDate: new Date(Date.now() - 29 * 24 * 60 * 60 * 1000).toISOString(),
+          technicianName: "Mike Johnson",
+          cost: 250.00,
+          description: "Fixed pipe leak under kitchen sink"
+        },
+        {
+          id: 102,
+          serviceType: "Electricity",
+          issueType: "Outlet Replacement",
+          status: "completed",
+          createdAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(),
+          completedDate: new Date(Date.now() - 59 * 24 * 60 * 60 * 1000).toISOString(),
+          technicianName: "John Smith",
+          cost: 120.00,
+          description: "Replaced 3 faulty outlets in living room"
+        }
+      ];
+      
+      setAppointments(mockAppointments);
+      setServiceRequests(mockServiceHistory);
+      setIsLoading(false);
+    }, 1000); // Simulate network delay
+  }, []);
   
   // Find upcoming appointment (first one that is scheduled)
-  const upcomingAppointment = appointments?.find(apt => apt.status === "scheduled");
+  const upcomingAppointment = appointments.find(apt => apt.status === "scheduled");
   
   // Filter completed service requests
-  const completedServices = serviceRequests?.filter(req => req.status === "completed") || [];
+  const completedServices = serviceRequests.filter(req => req.status === "completed") || [];
 
-  if (isLoadingAppointments || isLoadingHistory) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[500px]">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
