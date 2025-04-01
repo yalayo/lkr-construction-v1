@@ -191,23 +191,146 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getServiceRequest(id: number): Promise<ServiceRequest | undefined> {
-    const [request] = await db
-      .select()
-      .from(serviceRequests)
-      .where(eq(serviceRequests.id, id));
+    // Explicitly select columns to prevent errors with mismatched database schemas
+    const [request] = await db.select({
+      id: serviceRequests.id,
+      userId: serviceRequests.userId,
+      serviceType: serviceRequests.serviceType,
+      issueType: serviceRequests.issueType,
+      urgency: serviceRequests.urgency,
+      propertyType: serviceRequests.propertyType,
+      description: serviceRequests.description,
+      previousIssue: serviceRequests.previousIssue,
+      name: serviceRequests.name,
+      phone: serviceRequests.phone,
+      email: serviceRequests.email,
+      address: serviceRequests.address,
+      preferredDate: serviceRequests.preferredDate,
+      preferredTime: serviceRequests.preferredTime,
+      status: serviceRequests.status,
+      technicianId: serviceRequests.technicianId,
+      technicianName: serviceRequests.technicianName,
+      cost: serviceRequests.cost,
+      notes: serviceRequests.notes,
+      completedDate: serviceRequests.completedDate,
+      quotedAmount: serviceRequests.quotedAmount,
+      quoteDate: serviceRequests.quoteDate,
+      quoteExpiryDate: serviceRequests.quoteExpiryDate,
+      quoteNotes: serviceRequests.quoteNotes,
+      quoteToken: serviceRequests.quoteToken,
+      quoteAcceptedDate: serviceRequests.quoteAcceptedDate,
+      priority: serviceRequests.priority,
+      quoteAccepted: serviceRequests.quoteAccepted,
+      scheduledDate: serviceRequests.scheduledDate,
+      createdAt: serviceRequests.createdAt,
+      updatedAt: serviceRequests.updatedAt,
+    })
+    .from(serviceRequests)
+    .where(eq(serviceRequests.id, id));
     
-    return request;
+    if (!request) return undefined;
+    
+    // Add missing fields with null values
+    return {
+      ...request,
+      completionNotes: null,
+      materialUsed: null,
+      completionDate: request.completedDate, // Use completedDate for completionDate
+    } as ServiceRequest;
   }
   
   async getServiceRequestsByUserId(userId: number): Promise<ServiceRequest[]> {
-    return await db
-      .select()
-      .from(serviceRequests)
-      .where(eq(serviceRequests.userId, userId));
+    // Explicitly select columns to prevent errors with mismatched database schemas
+    const dbResults = await db.select({
+      id: serviceRequests.id,
+      userId: serviceRequests.userId,
+      serviceType: serviceRequests.serviceType,
+      issueType: serviceRequests.issueType,
+      urgency: serviceRequests.urgency,
+      propertyType: serviceRequests.propertyType,
+      description: serviceRequests.description,
+      previousIssue: serviceRequests.previousIssue,
+      name: serviceRequests.name,
+      phone: serviceRequests.phone,
+      email: serviceRequests.email,
+      address: serviceRequests.address,
+      preferredDate: serviceRequests.preferredDate,
+      preferredTime: serviceRequests.preferredTime,
+      status: serviceRequests.status,
+      technicianId: serviceRequests.technicianId,
+      technicianName: serviceRequests.technicianName,
+      cost: serviceRequests.cost,
+      notes: serviceRequests.notes,
+      completedDate: serviceRequests.completedDate,
+      quotedAmount: serviceRequests.quotedAmount,
+      quoteDate: serviceRequests.quoteDate,
+      quoteExpiryDate: serviceRequests.quoteExpiryDate,
+      quoteNotes: serviceRequests.quoteNotes,
+      quoteToken: serviceRequests.quoteToken,
+      quoteAcceptedDate: serviceRequests.quoteAcceptedDate,
+      priority: serviceRequests.priority,
+      quoteAccepted: serviceRequests.quoteAccepted,
+      scheduledDate: serviceRequests.scheduledDate,
+      createdAt: serviceRequests.createdAt,
+      updatedAt: serviceRequests.updatedAt,
+    })
+    .from(serviceRequests)
+    .where(eq(serviceRequests.userId, userId));
+
+    // For each result, add missing fields with null values
+    return dbResults.map(request => ({
+      ...request,
+      // Add missing fields
+      completionNotes: null,
+      materialUsed: null,
+      completionDate: request.completedDate, // Use completedDate for completionDate
+    } as ServiceRequest));
   }
   
   async getAllServiceRequests(): Promise<ServiceRequest[]> {
-    return await db.select().from(serviceRequests);
+    // Explicitly select columns to prevent errors with mismatched database schemas
+    const dbResults = await db.select({
+      id: serviceRequests.id,
+      userId: serviceRequests.userId,
+      serviceType: serviceRequests.serviceType,
+      issueType: serviceRequests.issueType,
+      urgency: serviceRequests.urgency,
+      propertyType: serviceRequests.propertyType,
+      description: serviceRequests.description,
+      previousIssue: serviceRequests.previousIssue,
+      name: serviceRequests.name,
+      phone: serviceRequests.phone,
+      email: serviceRequests.email,
+      address: serviceRequests.address,
+      preferredDate: serviceRequests.preferredDate,
+      preferredTime: serviceRequests.preferredTime,
+      status: serviceRequests.status,
+      technicianId: serviceRequests.technicianId,
+      technicianName: serviceRequests.technicianName,
+      cost: serviceRequests.cost,
+      notes: serviceRequests.notes,
+      completedDate: serviceRequests.completedDate,
+      quotedAmount: serviceRequests.quotedAmount,
+      quoteDate: serviceRequests.quoteDate,
+      quoteExpiryDate: serviceRequests.quoteExpiryDate,
+      quoteNotes: serviceRequests.quoteNotes,
+      quoteToken: serviceRequests.quoteToken,
+      quoteAcceptedDate: serviceRequests.quoteAcceptedDate,
+      priority: serviceRequests.priority,
+      quoteAccepted: serviceRequests.quoteAccepted,
+      scheduledDate: serviceRequests.scheduledDate,
+      createdAt: serviceRequests.createdAt,
+      updatedAt: serviceRequests.updatedAt,
+    }).from(serviceRequests);
+
+    // For each result, add missing fields with null values
+    return dbResults.map(request => ({
+      ...request,
+      // Add missing fields
+      completionNotes: null,
+      materialUsed: null,
+      completionDate: request.completedDate, // Use completedDate for completionDate
+    } as ServiceRequest));
   }
   
   async updateServiceRequest(id: number, data: Partial<ServiceRequest>): Promise<ServiceRequest | undefined> {
@@ -642,7 +765,17 @@ export class MemStorage implements IStorage {
   }
   
   async getAllServiceRequests(): Promise<ServiceRequest[]> {
-    return Array.from(this.serviceRequests.values());
+    const requests = Array.from(this.serviceRequests.values());
+    
+    // Add missing fields for consistency with the database implementation
+    return requests.map(request => ({
+      ...request,
+      // Add missing fields with fallback values
+      completionNotes: request.completionNotes || null,
+      materialUsed: request.materialUsed || null,
+      completionDate: request.completionDate || request.completedDate || null,
+      priority: request.priority || 0,
+    }));
   }
   
   async updateServiceRequest(id: number, data: Partial<ServiceRequest>): Promise<ServiceRequest | undefined> {
