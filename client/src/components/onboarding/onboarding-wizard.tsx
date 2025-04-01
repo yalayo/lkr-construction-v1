@@ -31,13 +31,13 @@ const steps = {
   client: [
     {
       title: "Welcome",
-      description: "Welcome to ElecPlumb! Let's get you set up.",
+      description: "Welcome to LKR Construction! Let's get you set up.",
       icon: <User className="h-12 w-12 text-primary" />,
       content: (
         <div className="space-y-4">
-          <h3 className="text-lg font-medium">Welcome to ElecPlumb Service Manager</h3>
+          <h3 className="text-lg font-medium">Welcome to LKR Construction Service Manager</h3>
           <p className="text-sm text-neutral-600">
-            We're excited to help you manage your electrical and plumbing service needs.
+            We're excited to help you manage your construction, electrical and plumbing service needs.
             This quick tour will help you understand how to:
           </p>
           <ul className="space-y-2">
@@ -196,11 +196,11 @@ const steps = {
   technician: [
     {
       title: "Welcome",
-      description: "Welcome to ElecPlumb! Let's get you set up.",
+      description: "Welcome to LKR Construction! Let's get you set up.",
       icon: <User className="h-12 w-12 text-primary" />,
       content: (
         <div className="space-y-4">
-          <h3 className="text-lg font-medium">Welcome to ElecPlumb Service Manager</h3>
+          <h3 className="text-lg font-medium">Welcome to LKR Construction Service Manager</h3>
           <p className="text-sm text-neutral-600">
             We're excited to have you on our team! This quick tour will help you understand how to:
           </p>
@@ -326,13 +326,13 @@ const steps = {
   owner: [
     {
       title: "Welcome",
-      description: "Welcome to ElecPlumb! Let's get you set up.",
+      description: "Welcome to LKR Construction! Let's get you set up.",
       icon: <User className="h-12 w-12 text-primary" />,
       content: (
         <div className="space-y-4">
-          <h3 className="text-lg font-medium">Welcome to ElecPlumb Business Dashboard</h3>
+          <h3 className="text-lg font-medium">Welcome to LKR Construction Business Dashboard</h3>
           <p className="text-sm text-neutral-600">
-            We're excited to help you manage your electrical and plumbing business!
+            We're excited to help you manage your construction, electrical and plumbing business!
             This quick tour will help you understand how to:
           </p>
           <ul className="space-y-2">
@@ -465,11 +465,11 @@ const steps = {
   admin: [
     {
       title: "Welcome",
-      description: "Welcome to ElecPlumb! Let's get you set up.",
+      description: "Welcome to LKR Construction! Let's get you set up.",
       icon: <User className="h-12 w-12 text-primary" />,
       content: (
         <div className="space-y-4">
-          <h3 className="text-lg font-medium">Welcome to ElecPlumb Administration</h3>
+          <h3 className="text-lg font-medium">Welcome to LKR Construction Administration</h3>
           <p className="text-sm text-neutral-600">
             You have access to all system administration functions. This quick tour will help you understand how to:
           </p>

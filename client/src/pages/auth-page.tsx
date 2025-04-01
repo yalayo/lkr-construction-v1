@@ -185,9 +185,9 @@ const AuthPage = () => {
             <div className="flex justify-center items-center mb-2">
               <Zap className="h-6 w-6 text-primary mr-1" />
               <Droplet className="h-6 w-6 text-secondary-500 mr-2" />
-              <span className="font-semibold text-2xl text-neutral-800">ElecPlumb</span>
+              <span className="font-semibold text-2xl text-neutral-800">LKR Construction</span>
             </div>
-            <h1 className="text-2xl font-bold text-neutral-900">Welcome to ElecPlumb</h1>
+            <h1 className="text-2xl font-bold text-neutral-900">Welcome to LKR Construction</h1>
             <p className="text-neutral-600 mt-1">Your trusted service partner in Lake Charles</p>
           </div>
           
@@ -402,7 +402,7 @@ const AuthPage = () => {
           <div>
             <h2 className="text-3xl font-bold mb-4">Expert Electrical & Plumbing Services</h2>
             <p className="mb-6">
-              Join ElecPlumb for reliable electrical and plumbing services in Lake Charles, Louisiana. Our skilled technicians provide prompt, professional service to meet all your home maintenance needs.
+              Join LKR Construction for reliable construction, electrical, and plumbing services in Lake Charles, Louisiana. Our skilled technicians provide prompt, professional service to meet all your home maintenance needs.
             </p>
             <div className="space-y-4">
               <div className="flex items-start">

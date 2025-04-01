@@ -14,10 +14,10 @@ const Footer = () => {
               <span className="text-secondary-300 mr-2">
                 <Droplet size={24} />
               </span>
-              <span className="font-semibold text-xl text-white">ElecPlumb</span>
+              <span className="font-semibold text-xl text-white">LKR Construction</span>
             </div>
             <p className="text-neutral-300 text-sm">
-              Your trusted service provider for all electrical and plumbing needs in Lake Charles, Louisiana.
+              Your trusted service provider for all construction, electrical and plumbing needs in Lake Charles, Louisiana.
             </p>
             <div className="flex mt-4 space-x-4">
               <a href="#" className="text-neutral-300 hover:text-white">
@@ -67,7 +67,7 @@ const Footer = () => {
               </li>
               <li className="flex items-center">
                 <Mail className="mr-2" size={16} />
-                <span>info@elecplumb.com</span>
+                <span>info@lkrconstruction.com</span>
               </li>
               <li className="flex items-center">
                 <Clock className="mr-2" size={16} />
@@ -78,7 +78,7 @@ const Footer = () => {
         </div>
         
         <div className="mt-8 pt-6 border-t border-neutral-700 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-neutral-400 text-sm">© {new Date().getFullYear()} ElecPlumb. All rights reserved.</p>
+          <p className="text-neutral-400 text-sm">© {new Date().getFullYear()} LKR Construction. All rights reserved.</p>
           <div className="mt-4 md:mt-0 flex space-x-6">
             <a href="#" className="text-neutral-400 text-sm hover:text-neutral-300">Privacy Policy</a>
             <a href="#" className="text-neutral-400 text-sm hover:text-neutral-300">Terms of Service</a>

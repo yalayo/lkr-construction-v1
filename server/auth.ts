@@ -35,7 +35,7 @@ async function comparePasswords(supplied: string, stored: string): Promise<boole
 }
 
 export function setupAuth(app: Express) {
-  const sessionSecret = process.env.SESSION_SECRET || "elecplumb-secret-key";
+  const sessionSecret = process.env.SESSION_SECRET || "lkrconstruction-secret-key";
   
   const sessionSettings: session.SessionOptions = {
     secret: sessionSecret,
