@@ -141,7 +141,26 @@ const OwnerDashboard = () => {
     queryFn: async () => {
       try {
         console.log('Fetching service requests for dashboard');
-        const res = await apiRequest('GET', '/api/service-requests');
+        // Make sure we only fetch when user is authenticated
+        if (!user) {
+          console.log('User not authenticated, skipping fetch');
+          return [];
+        }
+        console.log('Authenticated as:', user.username, 'with role:', user.role);
+        
+        const res = await fetch('/api/service-requests', {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+        
+        if (!res.ok) {
+          const errText = await res.text();
+          throw new Error(errText || `Error fetching service requests: ${res.status}`);
+        }
+        
         const data: ServiceRequest[] = await res.json();
         console.log('Received service requests:', data.length);
         return data;
@@ -149,7 +168,9 @@ const OwnerDashboard = () => {
         console.error('Error fetching service requests:', error);
         throw error;
       }
-    }
+    },
+    // Only run this query when the user is authenticated
+    enabled: !!user
   });
   
   // Fetch stats, leads, and financials data
@@ -159,102 +180,120 @@ const OwnerDashboard = () => {
   } = useQuery({
     queryKey: ['/api/dashboard', filterPeriod],
     queryFn: async () => {
-      // For now, we'll use mock data
-      // In production, we would fetch this from the backend
-      return {
-        stats: {
-          newLeads: 24,
-          pendingLeads: 12,
-          pendingJobs: 8,
-          revenue: 15250,
-          expenses: 8750,
-          profit: 6500,
-          conversionRate: 68,
-          nextJob: "Today, 2:00 PM - Electrical Panel Upgrade",
-          completedJobs: 42
-        },
-        leads: [
-          {
-            id: 1,
-            name: "James Wilson",
-            email: "james@example.com",
-            phone: "(555) 111-2233",
-            serviceType: "Electricity",
-            issueType: "Wiring Issues",
-            urgency: "High",
-            status: "pending",
-            createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-            estimatedPrice: 450
+      try {
+        console.log('Fetching dashboard data');
+        // Make sure we only fetch when user is authenticated
+        if (!user) {
+          console.log('User not authenticated, skipping dashboard fetch');
+          return {
+            stats: null,
+            leads: [],
+            financials: null
+          };
+        }
+        console.log('Dashboard fetch as:', user.username, 'with role:', user.role);
+        
+        // For now, we'll use mock data while the backend endpoint is developed
+        return {
+          stats: {
+            newLeads: 24,
+            pendingLeads: 12,
+            pendingJobs: 8,
+            revenue: 15250,
+            expenses: 8750,
+            profit: 6500,
+            conversionRate: 68,
+            nextJob: "Today, 2:00 PM - Electrical Panel Upgrade",
+            completedJobs: 42
           },
-          {
-            id: 2,
-            name: "Sarah Johnson",
-            email: "sarah@example.com",
-            phone: "(555) 222-3344",
-            serviceType: "Plumbing",
-            issueType: "Pipe Leak",
-            urgency: "Medium",
-            status: "contacted",
-            createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-            estimatedPrice: 325
-          },
-          {
-            id: 3,
-            name: "Robert Brown",
-            email: "robert@example.com",
-            phone: "(555) 333-4455",
-            serviceType: "Both",
-            issueType: "Bathroom Renovation",
-            urgency: "Low",
-            status: "scheduled",
-            createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-            estimatedPrice: 1200
-          }
-        ],
-        financials: {
-          totalRevenue: 45750,
-          totalExpenses: 28200,
-          netProfit: 17550,
-          revenueBreakdown: {
-            electrical: 28000,
-            plumbing: 15250,
-            combined: 2500
-          },
-          expensesByCategory: {
-            "Materials": 14500,
-            "Labor": 9500,
-            "Overhead": 2800,
-            "Marketing": 1400
-          },
-          recentTransactions: [
+          leads: [
             {
               id: 1,
-              type: "Income",
-              description: "Circuit Panel Replacement - Johnson Residence",
-              amount: 1250,
-              date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-              category: "Electrical"
+              name: "James Wilson",
+              email: "james@example.com",
+              phone: "(555) 111-2233",
+              serviceType: "Electricity",
+              issueType: "Wiring Issues",
+              urgency: "High",
+              status: "pending",
+              createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+              estimatedPrice: 450
             },
             {
               id: 2,
-              type: "Expense",
-              description: "Electrical Supplies - Home Depot",
-              amount: 485,
-              date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-              category: "Materials"
+              name: "Sarah Johnson",
+              email: "sarah@example.com",
+              phone: "(555) 222-3344",
+              serviceType: "Plumbing",
+              issueType: "Pipe Leak",
+              urgency: "Medium",
+              status: "contacted",
+              createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+              estimatedPrice: 325
             },
             {
               id: 3,
-              type: "Income",
-              description: "Main Water Line Repair - Smith Residence",
-              amount: 875,
-              date: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-              category: "Plumbing"
+              name: "Robert Brown",
+              email: "robert@example.com",
+              phone: "(555) 333-4455",
+              serviceType: "Both",
+              issueType: "Bathroom Renovation",
+              urgency: "Low",
+              status: "scheduled",
+              createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+              estimatedPrice: 1200
             }
-          ]
-        }
-      };
-    }
+          ],
+          financials: {
+            totalRevenue: 45750,
+            totalExpenses: 28200,
+            netProfit: 17550,
+            revenueBreakdown: {
+              electrical: 28000,
+              plumbing: 15250,
+              combined: 2500
+            },
+            expensesByCategory: {
+              "Materials": 14500,
+              "Labor": 9500,
+              "Overhead": 2800,
+              "Marketing": 1400
+            },
+            recentTransactions: [
+              {
+                id: 1,
+                type: "Income",
+                description: "Circuit Panel Replacement - Johnson Residence",
+                amount: 1250,
+                date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+                category: "Electrical"
+              },
+              {
+                id: 2,
+                type: "Expense",
+                description: "Electrical Supplies - Home Depot",
+                amount: 485,
+                date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+                category: "Materials"
+              },
+              {
+                id: 3,
+                type: "Income",
+                description: "Main Water Line Repair - Smith Residence",
+                amount: 875,
+                date: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+                category: "Plumbing"
+              }
+            ]
+          }
+        };
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+        throw error;
+      }
+    },
+    // Only run this query when the user is authenticated
+    enabled: !!user
   });
   
   const isLoading = isLoadingRequests || isLoadingDashboard;
