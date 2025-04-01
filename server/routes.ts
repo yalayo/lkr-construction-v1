@@ -5,6 +5,7 @@ import { setupAuth } from "./auth";
 import { setupServiceRequestRoutes } from "./controllers/service-request";
 import { setupAppointmentRoutes } from "./controllers/appointment";
 import { setupAccountingRoutes } from "./controllers/accounting";
+import { setupDashboardRoutes } from "./controllers/dashboard";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication routes (/api/register, /api/login, /api/logout, /api/user)
@@ -18,6 +19,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Set up accounting routes
   setupAccountingRoutes(app);
+  
+  // Set up dashboard routes
+  setupDashboardRoutes(app);
   
   // User management routes
   app.get("/api/users", async (req, res, next) => {

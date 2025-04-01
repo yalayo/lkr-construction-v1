@@ -36,6 +36,7 @@ export interface IStorage {
   createAppointment(appointment: InsertAppointment): Promise<Appointment>;
   getAppointment(id: number): Promise<Appointment | undefined>;
   getAppointmentsByUserId(userId: number): Promise<Appointment[]>;
+  getAllAppointments(): Promise<Appointment[]>;
   updateAppointment(id: number, data: Partial<Appointment>): Promise<Appointment | undefined>;
   
   // Transaction operations
@@ -250,6 +251,10 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(appointments)
       .where(eq(appointments.userId, userId));
+  }
+  
+  async getAllAppointments(): Promise<Appointment[]> {
+    return await db.select().from(appointments);
   }
   
   async updateAppointment(id: number, data: Partial<Appointment>): Promise<Appointment | undefined> {
@@ -532,6 +537,10 @@ export class MemStorage implements IStorage {
   async getAppointmentsByUserId(userId: number): Promise<Appointment[]> {
     return Array.from(this.appointments.values())
       .filter(appointment => appointment.userId === userId);
+  }
+  
+  async getAllAppointments(): Promise<Appointment[]> {
+    return Array.from(this.appointments.values());
   }
   
   async updateAppointment(id: number, data: Partial<Appointment>): Promise<Appointment | undefined> {
