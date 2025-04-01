@@ -89,20 +89,7 @@ const Navbar = () => {
               </span>
               <span className="font-semibold text-xl text-neutral-800">LKR Construction</span>
             </Link>
-            <div className="hidden md:ml-6 md:flex md:space-x-8">
-              <Link href="/" className="inline-flex items-center px-1 pt-1 border-b-2 border-primary text-sm font-medium text-neutral-700">
-                Home
-              </Link>
-              <Link href="/request-service" className="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-neutral-500 hover:text-neutral-700 hover:border-neutral-300">
-                Services
-              </Link>
-              <Link href="/#about" className="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-neutral-500 hover:text-neutral-700 hover:border-neutral-300">
-                About
-              </Link>
-              <Link href="/#contact" className="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-neutral-500 hover:text-neutral-700 hover:border-neutral-300">
-                Contact
-              </Link>
-            </div>
+            {/* Upper menu bar removed as requested */}
           </div>
           
           <div className="flex items-center">
@@ -192,17 +179,7 @@ const Navbar = () => {
               </Link>
               <Link href="/request-service">
                 <span className="block px-3 py-2 rounded-md text-base font-medium text-neutral-700 hover:bg-neutral-50">
-                  Services
-                </span>
-              </Link>
-              <Link href="/#about">
-                <span className="block px-3 py-2 rounded-md text-base font-medium text-neutral-700 hover:bg-neutral-50">
-                  About
-                </span>
-              </Link>
-              <Link href="/#contact">
-                <span className="block px-3 py-2 rounded-md text-base font-medium text-neutral-700 hover:bg-neutral-50">
-                  Contact
+                  Request Service
                 </span>
               </Link>
               {user && (
