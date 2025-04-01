@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Zap, Droplet, Clock, Calendar, ArrowRight, CheckCircle2, AlertCircle, PhoneCall } from "lucide-react";
+import { Loader2, Zap, Droplet, Calendar, ArrowRight, AlertCircle, PhoneCall } from "lucide-react";
 import StatsOverview from "@/components/dashboard/stats-overview";
 import LeadManagement from "@/components/dashboard/lead-management";
 import FinancialOverview from "@/components/dashboard/financial-overview";
@@ -11,15 +11,25 @@ import { Badge } from "@/components/ui/badge";
 import { apiRequest } from "@/lib/queryClient";
 import { useQuery } from "@tanstack/react-query";
 
+// Helper function for urgency colors
+const urgencyColor = (urgency: string) => {
+  switch (urgency.toLowerCase()) {
+    case 'emergency': return '#f87171'; // red-400
+    case 'urgent': return '#fbbf24'; // amber-400
+    case 'standard': return '#60a5fa'; // blue-400
+    case 'flexible': return '#4ade80'; // green-400
+    default: return '#94a3b8'; // slate-400
+  }
+};
+
 // Service request component
 const ServiceRequestCard = ({ request }: { request: any }) => {
   const getUrgencyColor = (urgency: string) => {
     switch (urgency.toLowerCase()) {
       case 'emergency': return 'text-red-500';
       case 'urgent': return 'text-amber-500';
-      case 'high': return 'text-orange-500';
-      case 'medium': return 'text-blue-500';
-      case 'low': return 'text-green-500';
+      case 'standard': return 'text-blue-500';
+      case 'flexible': return 'text-green-500';
       default: return 'text-gray-500';
     }
   };
@@ -28,16 +38,15 @@ const ServiceRequestCard = ({ request }: { request: any }) => {
     switch (urgency.toLowerCase()) {
       case 'emergency': return 'bg-red-100';
       case 'urgent': return 'bg-amber-100';
-      case 'high': return 'bg-orange-100';
-      case 'medium': return 'bg-blue-100';
-      case 'low': return 'bg-green-100';
+      case 'standard': return 'bg-blue-100';
+      case 'flexible': return 'bg-green-100';
       default: return 'bg-gray-100';
     }
   };
 
   const getServiceIcon = (type: string) => {
     switch (type.toLowerCase()) {
-      case 'electricity':
+      case 'electrical':
         return <Zap className="h-5 w-5 text-blue-500" />;
       case 'plumbing':
         return <Droplet className="h-5 w-5 text-blue-500" />;
@@ -47,6 +56,7 @@ const ServiceRequestCard = ({ request }: { request: any }) => {
   };
 
   const formatDate = (dateString: string) => {
+    if (!dateString) return 'Not specified';
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('en-US', {
       month: 'short',
@@ -113,18 +123,6 @@ const ServiceRequestCard = ({ request }: { request: any }) => {
       </CardContent>
     </Card>
   );
-};
-
-// Helper function for urgency colors
-const urgencyColor = (urgency: string) => {
-  switch (urgency.toLowerCase()) {
-    case 'emergency': return '#f87171'; // red-400
-    case 'urgent': return '#fbbf24'; // amber-400
-    case 'high': return '#fb923c'; // orange-400
-    case 'medium': return '#60a5fa'; // blue-400
-    case 'low': return '#4ade80'; // green-400
-    default: return '#94a3b8'; // slate-400
-  }
 };
 
 const OwnerDashboard = () => {
