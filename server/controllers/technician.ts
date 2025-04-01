@@ -1,5 +1,7 @@
 import { Express } from "express";
 import { storage } from "../storage";
+import { eq } from "drizzle-orm";
+import { serviceRequests } from "@shared/schema";
 
 export function setupTechnicianRoutes(app: Express) {
   // Get all technicians
@@ -142,6 +144,152 @@ export function setupTechnicianRoutes(app: Express) {
         technicianName: technician.name,
         schedule: scheduleByDate
       });
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // Get assigned jobs for technician
+  app.get("/api/technician/jobs/assigned", async (req, res, next) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).send("Unauthorized");
+      }
+      
+      if (req.user.role !== "technician") {
+        return res.status(403).send("Access denied: Must be a technician");
+      }
+      
+      const technicianId = req.user.id;
+      const serviceRequests = await storage.getAllServiceRequests();
+      
+      // Get service requests assigned to this technician
+      const assignedJobs = serviceRequests.filter(sr => 
+        sr.technicianId === technicianId && 
+        sr.status !== "completed" && 
+        sr.status !== "cancelled"
+      );
+      
+      // Map to job format expected by the frontend
+      const formattedJobs = assignedJobs.map(job => ({
+        id: job.id,
+        title: `${job.serviceType} - ${job.issueType}`,
+        description: job.description || "",
+        status: job.status === "in_progress" ? "in_progress" : "pending",
+        priority: job.priority || 1,
+        createdAt: job.createdAt.toISOString(),
+        scheduledDate: job.scheduledDate,
+        clientName: job.name,
+        clientAddress: job.address,
+        clientPhone: job.phone,
+        clientEmail: job.email,
+        serviceType: job.serviceType,
+        issueType: job.issueType,
+        propertyType: job.propertyType,
+        notes: job.notes,
+        technicianId: job.technicianId,
+        completionNotes: job.completionNotes,
+        materialUsed: job.materialUsed
+      }));
+      
+      res.json(formattedJobs);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // Get available jobs (not assigned to any technician)
+  app.get("/api/technician/jobs/available", async (req, res, next) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).send("Unauthorized");
+      }
+      
+      if (req.user.role !== "technician") {
+        return res.status(403).send("Access denied: Must be a technician");
+      }
+      
+      const serviceRequests = await storage.getAllServiceRequests();
+      
+      // Get service requests not assigned to any technician and with accepted quotes
+      const availableJobs = serviceRequests.filter(sr => 
+        sr.technicianId === null && 
+        sr.status !== "completed" && 
+        sr.status !== "cancelled" &&
+        sr.quoteAcceptedDate !== null  // Only show jobs with accepted quotes
+      );
+      
+      // Map to job format expected by the frontend
+      const formattedJobs = availableJobs.map(job => ({
+        id: job.id,
+        title: `${job.serviceType} - ${job.issueType}`,
+        description: job.description || "",
+        status: "pending",
+        priority: job.priority || 1,
+        createdAt: job.createdAt.toISOString(),
+        scheduledDate: job.scheduledDate,
+        clientName: job.name,
+        clientAddress: job.address,
+        clientPhone: job.phone,
+        clientEmail: job.email,
+        serviceType: job.serviceType,
+        issueType: job.issueType,
+        propertyType: job.propertyType,
+        notes: job.notes,
+        technicianId: job.technicianId,
+        completionNotes: null,
+        materialUsed: null
+      }));
+      
+      res.json(formattedJobs);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // Get completed jobs for technician
+  app.get("/api/technician/jobs/completed", async (req, res, next) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).send("Unauthorized");
+      }
+      
+      if (req.user.role !== "technician") {
+        return res.status(403).send("Access denied: Must be a technician");
+      }
+      
+      const technicianId = req.user.id;
+      const serviceRequests = await storage.getAllServiceRequests();
+      
+      // Get completed service requests assigned to this technician
+      const completedJobs = serviceRequests.filter(sr => 
+        sr.technicianId === technicianId && 
+        sr.status === "completed"
+      );
+      
+      // Map to job format expected by the frontend
+      const formattedJobs = completedJobs.map(job => ({
+        id: job.id,
+        title: `${job.serviceType} - ${job.issueType}`,
+        description: job.description || "",
+        status: "completed",
+        priority: job.priority || 1,
+        createdAt: job.createdAt.toISOString(),
+        scheduledDate: job.scheduledDate,
+        clientName: job.name,
+        clientAddress: job.address,
+        clientPhone: job.phone,
+        clientEmail: job.email,
+        serviceType: job.serviceType,
+        issueType: job.issueType,
+        propertyType: job.propertyType,
+        notes: job.notes,
+        technicianId: job.technicianId,
+        completionNotes: job.completionNotes,
+        materialUsed: job.materialUsed
+      }));
+      
+      res.json(formattedJobs);
     } catch (error) {
       next(error);
     }

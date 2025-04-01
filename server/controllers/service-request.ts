@@ -1,4 +1,4 @@
-import { Express } from "express";
+import { Express, Request, Response } from "express";
 import { storage } from "../storage";
 import { sendSMS } from "../utils/twilio";
 import { 
@@ -67,7 +67,7 @@ export function setupServiceRequestRoutes(app: Express) {
         address: serviceRequest.address,
         preferredDate: serviceRequest.preferredDate,
         preferredTime: serviceRequest.preferredTime,
-        estimatedPrice,
+        estimatedPrice: estimatedPrice.toString(),
         status: "new",
         // Calculate priority - higher for emergency and high-value jobs
         priority: calculatePriority(serviceRequest, estimatedPrice)
@@ -137,7 +137,7 @@ export function setupServiceRequestRoutes(app: Express) {
       
       // Sort by priority (highest first), then by creation date (oldest first for FIFO)
       leads.sort((a, b) => {
-        if (a.priority !== b.priority) {
+        if (a.priority && b.priority && a.priority !== b.priority) {
           return b.priority - a.priority; // Higher priority first
         }
         return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(); // FIFO
@@ -344,6 +344,149 @@ export function setupServiceRequestRoutes(app: Express) {
     }
   });
   
+  // Service request assignment for technicians
+  app.post("/api/service-requests/:id/assign", async (req, res, next) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).send("Unauthorized");
+      }
+      
+      // Both technicians, owners, and admins can assign jobs
+      if (req.user.role !== "technician" && req.user.role !== "owner" && req.user.role !== "admin") {
+        return res.status(403).send("Access denied: Must be a technician, owner, or admin");
+      }
+      
+      const serviceRequestId = parseInt(req.params.id);
+      if (isNaN(serviceRequestId)) {
+        return res.status(400).send("Invalid service request ID");
+      }
+      
+      // Get the service request
+      const serviceRequest = await storage.getServiceRequest(serviceRequestId);
+      if (!serviceRequest) {
+        return res.status(404).send("Service request not found");
+      }
+      
+      // Can't assign already assigned jobs unless you're admin/owner
+      if (serviceRequest.technicianId && req.user.role === "technician") {
+        return res.status(400).send("This job is already assigned to a technician");
+      }
+      
+      // The technician ID could come from the body or the authenticated user
+      let technicianId = req.body.technicianId;
+      let technicianName = null;
+      
+      // If technician is assigning to self, use their own ID
+      if (req.user.role === "technician" && !technicianId) {
+        technicianId = req.user.id;
+        technicianName = req.user.name;
+      } 
+      // For owners/admins assigning to specific technicians
+      else if (technicianId) {
+        const technician = await storage.getUser(technicianId);
+        if (!technician || technician.role !== "technician") {
+          return res.status(404).send("Technician not found");
+        }
+        technicianName = technician.name;
+      } else {
+        return res.status(400).send("Technician ID is required");
+      }
+      
+      // Update the service request
+      const updatedServiceRequest = await storage.updateServiceRequest(serviceRequestId, {
+        status: "in_progress",
+        technicianId,
+        technicianName
+      });
+      
+      if (!updatedServiceRequest) {
+        return res.status(500).send("Failed to update service request");
+      }
+      
+      // Send notification to customer
+      const message = `Good news! Technician ${technicianName} has been assigned to your service request. They will be in touch to confirm the details.`;
+      await sendSMS(serviceRequest.phone, message);
+      
+      res.json({
+        success: true,
+        serviceRequest: updatedServiceRequest
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // Update service request status
+  app.patch("/api/service-requests/:id/update", async (req, res, next) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).send("Unauthorized");
+      }
+      
+      // Technicians, owners, and admins can update jobs
+      if (req.user.role !== "technician" && req.user.role !== "owner" && req.user.role !== "admin") {
+        return res.status(403).send("Access denied: Must be a technician, owner, or admin");
+      }
+      
+      const serviceRequestId = parseInt(req.params.id);
+      if (isNaN(serviceRequestId)) {
+        return res.status(400).send("Invalid service request ID");
+      }
+      
+      // Get the service request
+      const serviceRequest = await storage.getServiceRequest(serviceRequestId);
+      if (!serviceRequest) {
+        return res.status(404).send("Service request not found");
+      }
+      
+      // Technicians can only update their own assigned jobs
+      if (req.user.role === "technician" && serviceRequest.technicianId !== req.user.id) {
+        return res.status(403).send("You can only update jobs assigned to you");
+      }
+      
+      // Extract update data
+      const { status, notes, completionNotes, materialUsed } = req.body;
+      
+      // Validate the update data
+      const updateData: Record<string, any> = {};
+      
+      if (status) updateData.status = status;
+      if (notes) updateData.notes = notes;
+      if (completionNotes) updateData.completionNotes = completionNotes;
+      if (materialUsed) updateData.materialUsed = materialUsed;
+      
+      // If status is changing to completed, set the completion date
+      if (status === "completed") {
+        updateData.completedDate = new Date();
+        
+        // If there's no quoted amount, determine final cost from technician input
+        if (!serviceRequest.quotedAmount && req.body.finalCost) {
+          updateData.cost = req.body.finalCost;
+        }
+      }
+      
+      // Update the service request
+      const updatedServiceRequest = await storage.updateServiceRequest(serviceRequestId, updateData);
+      
+      if (!updatedServiceRequest) {
+        return res.status(500).send("Failed to update service request");
+      }
+      
+      // If status is completed, send SMS to customer
+      if (status === "completed") {
+        const message = `Your service request has been completed by ${serviceRequest.technicianName}. Thank you for choosing our services!`;
+        await sendSMS(serviceRequest.phone, message);
+      }
+      
+      res.json({
+        success: true,
+        serviceRequest: updatedServiceRequest
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+
   // Assign a technician to a lead
   app.post("/api/leads/:id/assign", async (req, res, next) => {
     try {
@@ -397,7 +540,7 @@ export function setupServiceRequestRoutes(app: Express) {
           technicianId: technician.id,
           technicianName: technician.name,
           technicianPhone: technician.phone,
-          scheduledDate,
+          scheduledDate: scheduledDate.toISOString(),
           timeSlot,
           status: "scheduled",
           serviceType: serviceRequest.serviceType,
@@ -465,5 +608,3 @@ function calculatePriority(request: InsertServiceRequest, price: number): number
   
   return priority;
 }
-
-// We now use the getClientUrl function from utils/quote.ts
