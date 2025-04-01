@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Zap, Droplet, Loader2 } from "lucide-react";
+import { Zap, Droplet, Loader2, Clock } from "lucide-react";
 
 // Login schema
 const loginSchema = z.object({

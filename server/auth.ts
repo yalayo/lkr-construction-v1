@@ -2,8 +2,7 @@ import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import { Express } from "express";
 import session from "express-session";
-import { scrypt, randomBytes, timingSafeEqual } from "crypto";
-import { promisify } from "util";
+import bcrypt from "bcryptjs";
 import { storage } from "./storage";
 import { User as SelectUser } from "@shared/schema";
 
@@ -13,19 +12,26 @@ declare global {
   }
 }
 
-const scryptAsync = promisify(scrypt);
-
-async function hashPassword(password: string) {
-  const salt = randomBytes(16).toString("hex");
-  const buf = (await scryptAsync(password, salt, 64)) as Buffer;
-  return `${buf.toString("hex")}.${salt}`;
+async function hashPassword(password: string): Promise<string> {
+  const saltRounds = 10;
+  return bcrypt.hash(password, saltRounds);
 }
 
-async function comparePasswords(supplied: string, stored: string) {
-  const [hashed, salt] = stored.split(".");
-  const hashedBuf = Buffer.from(hashed, "hex");
-  const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
-  return timingSafeEqual(hashedBuf, suppliedBuf);
+async function comparePasswords(supplied: string, stored: string): Promise<boolean> {
+  console.log("***** COMPARE PASSWORDS FUNCTION RUNNING *****");
+  console.log("Supplied password length:", supplied.length);
+  console.log("Stored password format:", stored.startsWith('$2') ? 'bcrypt' : 'unknown');
+  
+  try {
+    // Use bcrypt to compare the passwords
+    console.log("Comparing passwords with bcrypt...");
+    const result = await bcrypt.compare(supplied, stored);
+    console.log("Password match:", result);
+    return result;
+  } catch (error) {
+    console.error('Password comparison error:', error);
+    return false;
+  }
 }
 
 export function setupAuth(app: Express) {
@@ -51,13 +57,30 @@ export function setupAuth(app: Express) {
   passport.use(
     new LocalStrategy(async (username, password, done) => {
       try {
+        console.log(`Authenticating user: ${username}`);
+        
+        // Get user from database
         const user = await storage.getUserByUsername(username);
-        if (!user || !(await comparePasswords(password, user.password))) {
-          return done(null, false);
-        } else {
-          return done(null, user);
+        
+        // If user not found, authentication fails
+        if (!user) {
+          console.log(`User not found: ${username}`);
+          return done(null, false, { message: "Invalid username or password" });
         }
+        
+        // Check password
+        const isPasswordValid = await comparePasswords(password, user.password);
+        
+        if (!isPasswordValid) {
+          console.log(`Invalid password for user: ${username}`);
+          return done(null, false, { message: "Invalid username or password" });
+        }
+        
+        // Authentication successful
+        console.log(`Authentication successful for user: ${username}`);
+        return done(null, user);
       } catch (error) {
+        console.error("Authentication error:", error);
         return done(error);
       }
     }),
@@ -99,12 +122,33 @@ export function setupAuth(app: Express) {
   });
 
   app.post("/api/login", (req, res, next) => {
-    passport.authenticate("local", (err, user, info) => {
-      if (err) return next(err);
-      if (!user) return res.status(401).send("Invalid username or password");
+    console.log("Login attempt:", req.body.username);
+    
+    // Validate request body
+    if (!req.body.username || !req.body.password) {
+      console.log("Login missing credentials");
+      return res.status(400).send("Username and password are required");
+    }
+    
+    passport.authenticate("local", (err: any, user: any, info: any) => {
+      if (err) {
+        console.error("Login error:", err);
+        return next(err);
+      }
+      
+      if (!user) {
+        const message = info && info.message ? info.message : "Invalid username or password";
+        console.log("Login failed:", message);
+        return res.status(401).send(message);
+      }
       
       req.login(user, (err) => {
-        if (err) return next(err);
+        if (err) {
+          console.error("Session error:", err);
+          return next(err);
+        }
+        
+        console.log("Login successful for:", user.username);
         
         // Remove the password from the response
         const { password, ...userWithoutPassword } = user;

@@ -43,11 +43,11 @@ export interface IStorage {
   getTransactionsByPeriod(startDate: Date, endDate: Date): Promise<Transaction[]>;
   
   // Session store
-  sessionStore: ReturnType<typeof createMemoryStore> | ReturnType<typeof connectPg>;
+  sessionStore: session.Store;
 }
 
 export class DatabaseStorage implements IStorage {
-  sessionStore: ReturnType<typeof createMemoryStore> | ReturnType<typeof connectPg>;
+  sessionStore: session.Store;
 
   constructor() {
     this.sessionStore = new PostgresSessionStore({
@@ -284,7 +284,7 @@ export class MemStorage implements IStorage {
     appointments: number;
     transactions: number;
   };
-  sessionStore: ReturnType<typeof createMemoryStore> | ReturnType<typeof connectPg>;
+  sessionStore: session.Store;
 
   constructor() {
     this.users = new Map();
