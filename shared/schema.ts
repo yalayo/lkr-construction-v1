@@ -84,10 +84,16 @@ export const appointments = pgTable("appointments", {
   technicianPhone: text("technician_phone"),
   scheduledDate: date("scheduled_date").notNull(),
   timeSlot: text("time_slot").notNull(), // morning, afternoon, evening
-  status: text("status").notNull().default("scheduled"), // scheduled, completed, cancelled
+  startTime: text("start_time"), // Specific start time like "09:00" (optional)
+  endTime: text("end_time"), // Specific end time like "11:00" (optional)
+  duration: integer("duration"), // Duration in minutes (optional)
+  status: text("status").notNull().default("scheduled"), // scheduled, completed, cancelled, rescheduled
   serviceType: text("service_type").notNull(),
   issueType: text("issue_type").notNull(),
   notes: text("notes"),
+  reminderSent: boolean("reminder_sent").default(false), // track if reminder notification was sent
+  reminderScheduled: timestamp("reminder_scheduled"), // when reminder should be sent
+  previousAppointmentId: integer("previous_appointment_id"), // for tracking reschedules
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -158,6 +164,8 @@ export const insertAppointmentSchema = createInsertSchema(appointments).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+  reminderSent: true,
+  reminderScheduled: true,
 });
 
 export const insertTransactionSchema = createInsertSchema(transactions).omit({

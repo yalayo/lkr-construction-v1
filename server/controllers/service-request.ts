@@ -10,6 +10,36 @@ import { generateQuoteToken, sendQuoteSMS, getClientUrl } from "../utils/quote";
 import { z } from "zod";
 
 export function setupServiceRequestRoutes(app: Express) {
+  // Get service requests available for appointment scheduling
+  app.get("/api/service-requests/available", async (req, res, next) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).send("Unauthorized");
+      }
+      
+      // Only allow admins and owners to see all available service requests
+      // Regular users can only see their own
+      let serviceRequests;
+      if (req.user.role === "admin" || req.user.role === "owner") {
+        serviceRequests = await storage.getAllServiceRequests();
+      } else {
+        serviceRequests = await storage.getServiceRequestsByUserId(req.user.id);
+      }
+      
+      // Filter to service requests that need appointments (quote accepted, but not yet completed)
+      const availableRequests = serviceRequests.filter(request => {
+        return (
+          (request.status === "quote_accepted" || request.status === "in_progress") && 
+          request.quoteAccepted === true
+        );
+      });
+      
+      res.json(availableRequests);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
   // Create a new service request
   app.post("/api/service-requests", async (req, res, next) => {
     try {

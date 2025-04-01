@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Zap, Droplet, Menu, X, User, LogOut, Settings, HelpCircle } from "lucide-react";
+import { Zap, Droplet, Menu, X, User, LogOut, Settings, HelpCircle, Calendar } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useOnboarding } from "@/contexts/onboarding-context";
@@ -129,6 +129,10 @@ const Navbar = () => {
                       <User className="mr-2 h-4 w-4" />
                       <span>Dashboard</span>
                     </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setLocation("/appointments")}>
+                      <Calendar className="mr-2 h-4 w-4" />
+                      <span>Appointments</span>
+                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setLocation("/account-settings")}>
                       <Settings className="mr-2 h-4 w-4" />
                       <span>Account Settings</span>
@@ -187,6 +191,14 @@ const Navbar = () => {
                   <Link href={getDashboardLink()}>
                     <span className="block px-3 py-2 rounded-md text-base font-medium text-neutral-700 hover:bg-neutral-50">
                       Dashboard
+                    </span>
+                  </Link>
+                  <Link href="/appointments">
+                    <span className="block px-3 py-2 rounded-md text-base font-medium text-neutral-700 hover:bg-neutral-50">
+                      <span className="flex items-center">
+                        <Calendar className="mr-2 h-4 w-4" />
+                        Appointments
+                      </span>
                     </span>
                   </Link>
                   <Link href="/account-settings">

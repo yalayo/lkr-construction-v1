@@ -10,6 +10,7 @@ import TechnicianDashboard from "@/pages/technician-dashboard";
 import AccountSettings from "@/pages/account-settings";
 import QuoteAccepted from "@/pages/quote-accepted";
 import InventoryManagement from "@/pages/inventory-management";
+import AppointmentCalendar from "@/pages/appointment-calendar";
 import { ProtectedRoute } from "./lib/protected-route";
 import Navbar from "./components/layout/navbar";
 import Footer from "./components/layout/footer";
@@ -26,6 +27,7 @@ const OwnerDashboardWrapper = () => <OwnerDashboard />;
 const AdminDashboardWrapper = () => <AdminDashboard />;
 const TechnicianDashboardWrapper = () => <TechnicianDashboard />;
 const InventoryManagementWrapper = () => <InventoryManagement />;
+const AppointmentCalendarWrapper = () => <AppointmentCalendar />;
 
 // Simple onboarding component to show the wizard
 function OnboardingIntegration() {
@@ -102,6 +104,7 @@ function App() {
           <ProtectedRoute path="/admin-dashboard" component={AdminDashboardWrapper} />
           <ProtectedRoute path="/technician-dashboard" component={TechnicianDashboardWrapper} />
           <ProtectedRoute path="/inventory" component={InventoryManagementWrapper} />
+          <ProtectedRoute path="/appointments" component={AppointmentCalendarWrapper} />
           <ProtectedRoute path="/account-settings" component={AccountSettingsWrapper} />
           <Route component={NotFound} />
         </Switch>
