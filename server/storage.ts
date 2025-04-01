@@ -402,7 +402,7 @@ export class MemStorage implements IStorage {
       technicianId: null,
       technicianName: null,
       cost: null,
-      paymentStatus: null,
+      notes: null,
       description: request.description || null,
       preferredDate: request.preferredDate || null,
       preferredTime: request.preferredTime || null,
@@ -450,10 +450,7 @@ export class MemStorage implements IStorage {
       description: insertLead.description || null,
       preferredDate: insertLead.preferredDate || null,
       preferredTime: insertLead.preferredTime || null,
-      priority: insertLead.priority || null,
-      assignedTo: insertLead.assignedTo || null,
-      notes: insertLead.notes || null,
-      contactAttempts: insertLead.contactAttempts || 0
+      priority: 0
     };
     
     this.leads.set(id, lead);
@@ -494,8 +491,7 @@ export class MemStorage implements IStorage {
       technicianId: insertAppointment.technicianId || null,
       technicianName: insertAppointment.technicianName || null,
       notes: insertAppointment.notes || null,
-      completion: insertAppointment.completion || null,
-      feedback: insertAppointment.feedback || null
+      technicianPhone: insertAppointment.technicianPhone || null
     };
     
     this.appointments.set(id, appointment);
