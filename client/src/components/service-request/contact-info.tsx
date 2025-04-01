@@ -47,17 +47,17 @@ const ContactInfo = ({ formData, updateFormData }: ContactInfoProps) => {
 
   return (
     <div>
-      <h2 className="text-lg font-medium text-neutral-700 mb-4">
+      <h2 className="text-xl font-bold text-black mb-4">
         Contact Information
       </h2>
-      <p className="text-neutral-600 mb-6">
+      <p className="text-black mb-6">
         Please provide your contact details and preferred appointment time.
       </p>
       
       <div className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="name" className="block text-sm font-medium text-neutral-700 mb-1">
+            <Label htmlFor="name" className="block text-sm font-bold text-black mb-1">
               Full Name
             </Label>
             <Input
@@ -65,12 +65,12 @@ const ContactInfo = ({ formData, updateFormData }: ContactInfoProps) => {
               value={formData.name}
               onChange={(e) => updateFormData({ name: e.target.value })}
               placeholder="John Doe"
-              className="w-full"
+              className="w-full border-gray-500 text-black focus:border-black"
             />
           </div>
           
           <div>
-            <Label htmlFor="phone" className="block text-sm font-medium text-neutral-700 mb-1">
+            <Label htmlFor="phone" className="block text-sm font-bold text-black mb-1">
               Phone Number
             </Label>
             <Input
@@ -78,13 +78,13 @@ const ContactInfo = ({ formData, updateFormData }: ContactInfoProps) => {
               value={formData.phone}
               onChange={(e) => updateFormData({ phone: e.target.value })}
               placeholder="(337) 123-4567"
-              className="w-full"
+              className="w-full border-gray-500 text-black focus:border-black"
             />
           </div>
         </div>
         
         <div>
-          <Label htmlFor="email" className="block text-sm font-medium text-neutral-700 mb-1">
+          <Label htmlFor="email" className="block text-sm font-bold text-black mb-1">
             Email Address
           </Label>
           <Input
@@ -93,12 +93,12 @@ const ContactInfo = ({ formData, updateFormData }: ContactInfoProps) => {
             value={formData.email}
             onChange={(e) => updateFormData({ email: e.target.value })}
             placeholder="john@example.com"
-            className="w-full"
+            className="w-full border-gray-500 text-black focus:border-black"
           />
         </div>
         
         <div>
-          <Label htmlFor="address" className="block text-sm font-medium text-neutral-700 mb-1">
+          <Label htmlFor="address" className="block text-sm font-bold text-black mb-1">
             Service Address
           </Label>
           <Input
@@ -106,20 +106,20 @@ const ContactInfo = ({ formData, updateFormData }: ContactInfoProps) => {
             value={formData.address}
             onChange={(e) => updateFormData({ address: e.target.value })}
             placeholder="1234 Street, Lake Charles, LA 70601"
-            className="w-full"
+            className="w-full border-gray-500 text-black focus:border-black"
           />
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="preferred_date" className="block text-sm font-medium text-neutral-700 mb-1">
+            <Label htmlFor="preferred_date" className="block text-sm font-bold text-black mb-1">
               Preferred Date
             </Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
-                  className="w-full justify-start text-left font-normal"
+                  className="w-full justify-start text-left font-normal border-gray-500 text-black hover:bg-gray-100"
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {formData.preferredDate ? (
@@ -136,23 +136,24 @@ const ContactInfo = ({ formData, updateFormData }: ContactInfoProps) => {
                   onSelect={handleDateSelect}
                   initialFocus
                   disabled={(date) => date < new Date() || date > new Date(new Date().setMonth(new Date().getMonth() + 2))}
+                  className="text-black"
                 />
               </PopoverContent>
             </Popover>
           </div>
           
           <div>
-            <Label htmlFor="preferred_time" className="block text-sm font-medium text-neutral-700 mb-1">
+            <Label htmlFor="preferred_time" className="block text-sm font-bold text-black mb-1">
               Preferred Time
             </Label>
             <Select
               value={formData.preferredTime}
               onValueChange={(value) => updateFormData({ preferredTime: value })}
             >
-              <SelectTrigger className="w-full">
+              <SelectTrigger className="w-full text-black border-gray-500 focus:border-black">
                 <SelectValue placeholder="Select a time" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="text-black">
                 <SelectItem value="morning">Morning (8:00 AM - 12:00 PM)</SelectItem>
                 <SelectItem value="afternoon">Afternoon (12:00 PM - 4:00 PM)</SelectItem>
                 <SelectItem value="evening">Evening (4:00 PM - 7:00 PM)</SelectItem>

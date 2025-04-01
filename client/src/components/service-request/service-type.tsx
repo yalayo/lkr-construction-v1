@@ -17,8 +17,8 @@ const ServiceType = ({ formData, updateFormData }: ServiceTypeProps) => {
 
   return (
     <div>
-      <h2 className="text-lg font-medium text-neutral-700 mb-4">Select Service Type</h2>
-      <p className="text-neutral-600 mb-6">
+      <h2 className="text-xl font-bold text-black mb-4">Select Service Type</h2>
+      <p className="text-black mb-6">
         Please select the type of service you need assistance with.
       </p>
       
@@ -35,18 +35,18 @@ const ServiceType = ({ formData, updateFormData }: ServiceTypeProps) => {
           />
           <Label
             htmlFor="electrical"
-            className={`cursor-pointer flex flex-col items-center justify-center p-6 border-2 rounded-lg transition-all hover:border-primary-300 hover:bg-primary-50 ${
+            className={`cursor-pointer flex flex-col items-center justify-center p-6 border-2 rounded-lg transition-all hover:border-black hover:bg-gray-100 ${
               formData.serviceType === "electrical"
-                ? "border-primary-500 bg-primary-50"
-                : "border-neutral-200"
+                ? "border-black bg-gray-100"
+                : "border-gray-500"
             }`}
           >
-            <div className="service-icon mb-3 h-16 w-16 rounded-full bg-primary-100 flex items-center justify-center text-primary-500">
+            <div className="service-icon mb-3 h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center text-black">
               <Zap className="h-8 w-8" />
             </div>
             <div className="text-center">
-              <h3 className="font-medium text-lg">Electrical</h3>
-              <p className="text-sm text-neutral-800 mt-1">
+              <h3 className="font-bold text-lg text-black">Electrical</h3>
+              <p className="text-sm text-black mt-1">
                 Wiring, circuits, outlets, lighting, and all electrical issues
               </p>
             </div>
@@ -61,18 +61,18 @@ const ServiceType = ({ formData, updateFormData }: ServiceTypeProps) => {
           />
           <Label
             htmlFor="plumbing"
-            className={`cursor-pointer flex flex-col items-center justify-center p-6 border-2 rounded-lg transition-all hover:border-secondary-300 hover:bg-secondary-50 ${
+            className={`cursor-pointer flex flex-col items-center justify-center p-6 border-2 rounded-lg transition-all hover:border-black hover:bg-gray-100 ${
               formData.serviceType === "plumbing"
-                ? "border-secondary-500 bg-secondary-50"
-                : "border-neutral-200"
+                ? "border-black bg-gray-100"
+                : "border-gray-500"
             }`}
           >
-            <div className="service-icon mb-3 h-16 w-16 rounded-full bg-secondary-100 flex items-center justify-center text-secondary-500">
+            <div className="service-icon mb-3 h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center text-black">
               <Droplet className="h-8 w-8" />
             </div>
             <div className="text-center">
-              <h3 className="font-medium text-lg">Plumbing</h3>
-              <p className="text-sm text-neutral-800 mt-1">
+              <h3 className="font-bold text-lg text-black">Plumbing</h3>
+              <p className="text-sm text-black mt-1">
                 Leaks, drains, fixtures, toilets, and all plumbing issues
               </p>
             </div>
@@ -87,23 +87,23 @@ const ServiceType = ({ formData, updateFormData }: ServiceTypeProps) => {
           />
           <Label
             htmlFor="both"
-            className={`cursor-pointer flex flex-col items-center justify-center p-6 border-2 rounded-lg transition-all hover:border-neutral-400 hover:bg-neutral-50 ${
+            className={`cursor-pointer flex flex-col items-center justify-center p-6 border-2 rounded-lg transition-all hover:border-black hover:bg-gray-100 ${
               formData.serviceType === "both"
-                ? "border-neutral-500 bg-neutral-50"
-                : "border-neutral-200"
+                ? "border-black bg-gray-100"
+                : "border-gray-500"
             }`}
           >
             <div className="service-icon mb-3 flex">
-              <div className="h-16 w-16 rounded-full bg-primary-100 flex items-center justify-center text-primary-500 -mr-3 z-10">
+              <div className="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center text-black -mr-3 z-10">
                 <Zap className="h-8 w-8" />
               </div>
-              <div className="h-16 w-16 rounded-full bg-secondary-100 flex items-center justify-center text-secondary-500">
+              <div className="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center text-black">
                 <Droplet className="h-8 w-8" />
               </div>
             </div>
             <div className="text-center">
-              <h3 className="font-medium text-lg">Both Services</h3>
-              <p className="text-sm text-neutral-800 mt-1">
+              <h3 className="font-bold text-lg text-black">Both Services</h3>
+              <p className="text-sm text-black mt-1">
                 Need help with both electrical and plumbing issues
               </p>
             </div>

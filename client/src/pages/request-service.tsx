@@ -170,7 +170,7 @@ const RequestService = () => {
     <div className="container mx-auto px-4 py-8">
       <Card className="max-w-4xl mx-auto shadow-lg">
         <CardContent className="p-6">
-          <h1 className="text-2xl font-semibold text-neutral-800 mb-6">Request a Service</h1>
+          <h1 className="text-2xl font-semibold text-black mb-6">Request a Service</h1>
           
           {/* Progress Steps */}
           <div className="flex justify-between mb-8 px-4 sm:px-8">
@@ -179,8 +179,8 @@ const RequestService = () => {
                 key={step.id}
                 className={`flex flex-col items-center w-1/4 relative ${
                   step.id < currentStep 
-                    ? "after:bg-primary-500" 
-                    : "after:bg-neutral-200"
+                    ? "after:bg-black" 
+                    : "after:bg-gray-400"
                 } ${
                   step.id !== steps.length 
                     ? "after:content-[''] after:h-[2px] after:w-full after:absolute after:top-4 after:left-1/2 after:z-0"
@@ -190,10 +190,10 @@ const RequestService = () => {
                 <div 
                   className={`w-8 h-8 rounded-full border-2 flex items-center justify-center mb-2 z-10 ${
                     step.id < currentStep 
-                      ? "bg-primary-500 border-primary-500 text-white" 
+                      ? "bg-black border-black text-white" 
                       : step.id === currentStep 
-                        ? "border-primary-500 text-primary-500" 
-                        : "border-neutral-300 text-neutral-400 bg-white"
+                        ? "border-black text-black" 
+                        : "border-gray-700 text-black bg-white"
                   }`}
                 >
                   {step.id < currentStep ? <Check className="h-5 w-5" /> : step.id}
@@ -201,10 +201,10 @@ const RequestService = () => {
                 <span 
                   className={`text-sm ${
                     step.id === currentStep 
-                      ? "text-neutral-800 font-medium" 
+                      ? "text-black font-bold" 
                       : step.id < currentStep 
-                        ? "text-neutral-600" 
-                        : "text-neutral-400"
+                        ? "text-black" 
+                        : "text-black"
                   }`}
                 >
                   {step.title}
@@ -225,13 +225,17 @@ const RequestService = () => {
               variant="outline"
               onClick={prevStep}
               disabled={currentStep === 1}
-              className={currentStep === 1 ? "invisible" : ""}
+              className={`${currentStep === 1 ? "invisible" : ""} border-black text-black hover:bg-gray-100`}
             >
               <ArrowLeft className="mr-2 h-4 w-4" /> Back
             </Button>
             
             {currentStep < steps.length ? (
-              <Button type="button" onClick={nextStep}>
+              <Button 
+                type="button" 
+                onClick={nextStep}
+                className="bg-black hover:bg-gray-800 text-white"
+              >
                 Next <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             ) : (
@@ -239,9 +243,9 @@ const RequestService = () => {
                 type="button" 
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                className="bg-primary-500 hover:bg-primary-600 text-white"
+                className="bg-black hover:bg-gray-800 text-white font-bold py-2 px-6 text-lg"
               >
-                {isSubmitting ? "Submitting..." : "Submit Request"}
+                {isSubmitting ? "Submitting..." : "SEND SERVICE REQUEST"}
               </Button>
             )}
           </div>

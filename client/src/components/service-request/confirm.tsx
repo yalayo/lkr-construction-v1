@@ -56,67 +56,67 @@ const Confirm = ({ formData }: ConfirmProps) => {
 
   return (
     <div>
-      <h2 className="text-lg font-medium text-neutral-700 mb-2">
+      <h2 className="text-xl font-bold text-black mb-2">
         Confirm Service Request
       </h2>
-      <p className="text-neutral-600 mb-6">
+      <p className="text-black mb-6">
         Please review your service request details before submitting.
       </p>
       
       <div className="space-y-6">
         {/* Service Details */}
-        <div className="bg-neutral-50 p-4 rounded-lg">
-          <h3 className="font-medium text-neutral-800 mb-3 flex items-center">
-            <Info className="h-5 w-5 mr-2 text-primary" />
+        <div className="bg-gray-100 p-4 rounded-lg border border-gray-300">
+          <h3 className="font-bold text-black mb-3 flex items-center">
+            <Info className="h-5 w-5 mr-2 text-black" />
             Service Details
           </h3>
           
           <div className="space-y-2">
             <div className="flex items-center">
               {formData.serviceType === "electrical" ? (
-                <Zap className="h-5 w-5 mr-2 text-primary" />
+                <Zap className="h-5 w-5 mr-2 text-black" />
               ) : formData.serviceType === "plumbing" ? (
-                <Droplet className="h-5 w-5 mr-2 text-secondary-500" />
+                <Droplet className="h-5 w-5 mr-2 text-black" />
               ) : (
                 <div className="flex mr-2">
-                  <Zap className="h-5 w-5 text-primary" />
-                  <Droplet className="h-5 w-5 text-secondary-500" />
+                  <Zap className="h-5 w-5 text-black" />
+                  <Droplet className="h-5 w-5 text-black" />
                 </div>
               )}
               <div>
-                <span className="text-sm text-neutral-500">Service Type:</span>
-                <span className="ml-2 font-medium capitalize">{formData.serviceType}</span>
+                <span className="text-sm font-bold text-black">Service Type:</span>
+                <span className="ml-2 font-medium text-black capitalize">{formData.serviceType}</span>
               </div>
             </div>
             
             <div className="flex items-center">
-              <CheckCircle className="h-5 w-5 mr-2 text-neutral-600" />
+              <CheckCircle className="h-5 w-5 mr-2 text-black" />
               <div>
-                <span className="text-sm text-neutral-500">Issue Type:</span>
-                <span className="ml-2 font-medium">{formData.issueType}</span>
+                <span className="text-sm font-bold text-black">Issue Type:</span>
+                <span className="ml-2 font-medium text-black">{formData.issueType}</span>
               </div>
             </div>
             
             <div className="flex items-center">
-              <Clock className="h-5 w-5 mr-2 text-neutral-600" />
+              <Clock className="h-5 w-5 mr-2 text-black" />
               <div>
-                <span className="text-sm text-neutral-500">Urgency:</span>
-                <span className="ml-2 font-medium">{getUrgencyDisplay(formData.urgency)}</span>
+                <span className="text-sm font-bold text-black">Urgency:</span>
+                <span className="ml-2 font-medium text-black">{getUrgencyDisplay(formData.urgency)}</span>
               </div>
             </div>
             
             <div className="flex items-center">
-              <CheckCircle className="h-5 w-5 mr-2 text-neutral-600" />
+              <CheckCircle className="h-5 w-5 mr-2 text-black" />
               <div>
-                <span className="text-sm text-neutral-500">Property Type:</span>
-                <span className="ml-2 font-medium">{getPropertyTypeDisplay(formData.propertyType)}</span>
+                <span className="text-sm font-bold text-black">Property Type:</span>
+                <span className="ml-2 font-medium text-black">{getPropertyTypeDisplay(formData.propertyType)}</span>
               </div>
             </div>
             
             {formData.description && (
               <div className="pt-2">
-                <span className="text-sm text-neutral-500 block mb-1">Description:</span>
-                <p className="text-neutral-700 bg-white p-3 rounded border border-neutral-200">
+                <span className="text-sm font-bold text-black block mb-1">Description:</span>
+                <p className="text-black bg-white p-3 rounded border border-gray-300">
                   {formData.description}
                 </p>
               </div>
@@ -125,60 +125,60 @@ const Confirm = ({ formData }: ConfirmProps) => {
         </div>
         
         {/* Contact Information */}
-        <div className="bg-neutral-50 p-4 rounded-lg">
-          <h3 className="font-medium text-neutral-800 mb-3 flex items-center">
-            <User className="h-5 w-5 mr-2 text-primary" />
+        <div className="bg-gray-100 p-4 rounded-lg border border-gray-300">
+          <h3 className="font-bold text-black mb-3 flex items-center">
+            <User className="h-5 w-5 mr-2 text-black" />
             Contact Information
           </h3>
           
           <div className="space-y-2">
             <div className="flex items-center">
-              <User className="h-5 w-5 mr-2 text-neutral-600" />
+              <User className="h-5 w-5 mr-2 text-black" />
               <div>
-                <span className="text-sm text-neutral-500">Name:</span>
-                <span className="ml-2 font-medium">{formData.name}</span>
+                <span className="text-sm font-bold text-black">Name:</span>
+                <span className="ml-2 font-medium text-black">{formData.name}</span>
               </div>
             </div>
             
             <div className="flex items-center">
-              <Phone className="h-5 w-5 mr-2 text-neutral-600" />
+              <Phone className="h-5 w-5 mr-2 text-black" />
               <div>
-                <span className="text-sm text-neutral-500">Phone:</span>
-                <span className="ml-2 font-medium">{formData.phone}</span>
+                <span className="text-sm font-bold text-black">Phone:</span>
+                <span className="ml-2 font-medium text-black">{formData.phone}</span>
               </div>
             </div>
             
             <div className="flex items-center">
-              <Mail className="h-5 w-5 mr-2 text-neutral-600" />
+              <Mail className="h-5 w-5 mr-2 text-black" />
               <div>
-                <span className="text-sm text-neutral-500">Email:</span>
-                <span className="ml-2 font-medium">{formData.email}</span>
+                <span className="text-sm font-bold text-black">Email:</span>
+                <span className="ml-2 font-medium text-black">{formData.email}</span>
               </div>
             </div>
             
             <div className="flex items-center">
-              <MapPin className="h-5 w-5 mr-2 text-neutral-600" />
+              <MapPin className="h-5 w-5 mr-2 text-black" />
               <div>
-                <span className="text-sm text-neutral-500">Address:</span>
-                <span className="ml-2 font-medium">{formData.address}</span>
+                <span className="text-sm font-bold text-black">Address:</span>
+                <span className="ml-2 font-medium text-black">{formData.address}</span>
               </div>
             </div>
           </div>
         </div>
         
         {/* Preferred Schedule */}
-        <div className="bg-neutral-50 p-4 rounded-lg">
-          <h3 className="font-medium text-neutral-800 mb-3 flex items-center">
-            <CalendarDays className="h-5 w-5 mr-2 text-primary" />
+        <div className="bg-gray-100 p-4 rounded-lg border border-gray-300">
+          <h3 className="font-bold text-black mb-3 flex items-center">
+            <CalendarDays className="h-5 w-5 mr-2 text-black" />
             Preferred Schedule
           </h3>
           
           <div className="space-y-2">
             <div className="flex items-center">
-              <CalendarDays className="h-5 w-5 mr-2 text-neutral-600" />
+              <CalendarDays className="h-5 w-5 mr-2 text-black" />
               <div>
-                <span className="text-sm text-neutral-500">Date:</span>
-                <span className="ml-2 font-medium">
+                <span className="text-sm font-bold text-black">Date:</span>
+                <span className="ml-2 font-medium text-black">
                   {formData.preferredDate 
                     ? format(new Date(formData.preferredDate), "EEEE, MMMM d, yyyy")
                     : "Not specified"}
@@ -187,10 +187,10 @@ const Confirm = ({ formData }: ConfirmProps) => {
             </div>
             
             <div className="flex items-center">
-              <Clock className="h-5 w-5 mr-2 text-neutral-600" />
+              <Clock className="h-5 w-5 mr-2 text-black" />
               <div>
-                <span className="text-sm text-neutral-500">Time:</span>
-                <span className="ml-2 font-medium">
+                <span className="text-sm font-bold text-black">Time:</span>
+                <span className="ml-2 font-medium text-black">
                   {formData.preferredTime 
                     ? getTimeDisplay(formData.preferredTime)
                     : "Not specified"}
@@ -200,7 +200,7 @@ const Confirm = ({ formData }: ConfirmProps) => {
           </div>
         </div>
         
-        <div className="text-center text-sm text-neutral-600 mt-4">
+        <div className="text-center text-sm text-black font-medium mt-4">
           <p>
             By submitting this request, you agree to our terms of service and privacy policy.
             We'll contact you shortly to confirm your appointment.
