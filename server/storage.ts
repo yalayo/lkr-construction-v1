@@ -6,6 +6,7 @@ import { db } from "./db";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db";
 
+// Create session stores
 const MemoryStore = createMemoryStore(session);
 const PostgresSessionStore = connectPg(session);
 
@@ -50,9 +51,9 @@ export class DatabaseStorage implements IStorage {
   sessionStore: session.Store;
 
   constructor() {
-    this.sessionStore = new PostgresSessionStore({
-      pool,
-      createTableIfMissing: true
+    // Switch back to in-memory session store to avoid schema conflicts
+    this.sessionStore = new MemoryStore({
+      checkPeriod: 86400000, // 24 hours in milliseconds
     });
     
     // Seed users needs to be handled carefully with database
@@ -357,7 +358,14 @@ export class MemStorage implements IStorage {
     const id = this.currentId.users++;
     const createdAt = new Date();
     const updatedAt = new Date();
-    const user: User = { ...insertUser, id, createdAt, updatedAt };
+    // Ensure role is always defined
+    const user: User = { 
+      ...insertUser, 
+      id, 
+      createdAt, 
+      updatedAt,
+      role: insertUser.role || 'client' // Default to client if role is not specified
+    };
     this.users.set(id, user);
     return user;
   }
@@ -382,12 +390,23 @@ export class MemStorage implements IStorage {
     const updatedAt = new Date();
     const status = "new";
     
+    // Add required fields with default values for memory storage
     const serviceRequest: ServiceRequest = { 
       ...request, 
       id, 
       status,
       createdAt, 
-      updatedAt 
+      updatedAt,
+      // Provide default values for required fields
+      userId: request.userId || null,
+      technicianId: null,
+      technicianName: null,
+      cost: null,
+      paymentStatus: null,
+      description: request.description || null,
+      preferredDate: request.preferredDate || null,
+      preferredTime: request.preferredTime || null,
+      completedDate: null
     };
     
     this.serviceRequests.set(id, serviceRequest);
@@ -421,10 +440,20 @@ export class MemStorage implements IStorage {
     const id = this.currentId.leads++;
     const createdAt = new Date();
     
+    // Add required fields with default values for memory storage
     const lead: Lead = { 
       ...insertLead, 
       id, 
-      createdAt
+      createdAt,
+      // Default values for required fields
+      status: insertLead.status || 'new',
+      description: insertLead.description || null,
+      preferredDate: insertLead.preferredDate || null,
+      preferredTime: insertLead.preferredTime || null,
+      priority: insertLead.priority || null,
+      assignedTo: insertLead.assignedTo || null,
+      notes: insertLead.notes || null,
+      contactAttempts: insertLead.contactAttempts || 0
     };
     
     this.leads.set(id, lead);
@@ -454,11 +483,19 @@ export class MemStorage implements IStorage {
     const createdAt = new Date();
     const updatedAt = new Date();
     
+    // Add required fields with default values for memory storage
     const appointment: Appointment = { 
       ...insertAppointment, 
       id, 
       createdAt, 
-      updatedAt 
+      updatedAt,
+      // Default values for required fields
+      status: insertAppointment.status || 'scheduled',
+      technicianId: insertAppointment.technicianId || null,
+      technicianName: insertAppointment.technicianName || null,
+      notes: insertAppointment.notes || null,
+      completion: insertAppointment.completion || null,
+      feedback: insertAppointment.feedback || null
     };
     
     this.appointments.set(id, appointment);
@@ -488,10 +525,14 @@ export class MemStorage implements IStorage {
     const id = this.currentId.transactions++;
     const createdAt = new Date();
     
+    // Add required fields with default values for memory storage
     const transaction: Transaction = { 
       ...insertTransaction, 
       id, 
-      createdAt 
+      createdAt,
+      // Default values for required fields
+      notes: insertTransaction.notes || null,
+      serviceRequestId: insertTransaction.serviceRequestId || null
     };
     
     this.transactions.set(id, transaction);

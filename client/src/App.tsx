@@ -11,6 +11,13 @@ import AccountSettings from "@/pages/account-settings";
 import { ProtectedRoute } from "./lib/protected-route";
 import Navbar from "./components/layout/navbar";
 import Footer from "./components/layout/footer";
+import React from "react";
+
+// Fix Account Settings component wrapper for protected route
+const AccountSettingsWrapper = () => <AccountSettings />;
+const ClientDashboardWrapper = () => <ClientDashboard />;
+const OwnerDashboardWrapper = () => <OwnerDashboard />;
+const AdminDashboardWrapper = () => <AdminDashboard />;
 
 function Router() {
   return (
@@ -18,10 +25,10 @@ function Router() {
       <Route path="/" component={HomePage} />
       <Route path="/auth" component={AuthPage} />
       <Route path="/request-service" component={RequestService} />
-      <ProtectedRoute path="/client-dashboard" component={ClientDashboard} />
-      <ProtectedRoute path="/owner-dashboard" component={OwnerDashboard} />
-      <ProtectedRoute path="/admin-dashboard" component={AdminDashboard} />
-      <ProtectedRoute path="/account-settings" component={AccountSettings} />
+      <ProtectedRoute path="/client-dashboard" component={ClientDashboardWrapper} />
+      <ProtectedRoute path="/owner-dashboard" component={OwnerDashboardWrapper} />
+      <ProtectedRoute path="/admin-dashboard" component={AdminDashboardWrapper} />
+      <ProtectedRoute path="/account-settings" component={AccountSettingsWrapper} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -22,7 +22,8 @@ const AccountSettings = () => {
   }
 
   if (!user) {
-    return null; // Will redirect via the useEffect
+    // Return a loading placeholder instead of null to satisfy React.ReactElement typing
+    return <div className="flex justify-center items-center min-h-screen">Redirecting to login...</div>;
   }
 
   return (

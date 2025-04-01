@@ -42,14 +42,54 @@ app.use((req, res, next) => {
 (async () => {
   // Initialize database and schema
   try {
-    log("Running drizzle-kit push to create database schema", "db");
+    // Create session table manually
+    try {
+      const { pool } = await import("./db");
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS "session" (
+          "sid" varchar NOT NULL PRIMARY KEY,
+          "sess" json NOT NULL,
+          "expire" timestamp(6) NOT NULL
+        )
+      `);
+      log("Session table created/verified", "db");
+    } catch (sessionError) {
+      log(`Error setting up session table: ${sessionError}`, "db");
+      // Continue anyway since we're using memory store
+    }
     
-    // Create tables if not exists
-    const result = await import("child_process").then(({ execSync }) => {
-      return execSync("npm run db:push").toString();
-    });
+    // Skip Drizzle push to avoid session table conflicts
+    log("Checking if tables already exist in database", "db");
     
-    log(`Database schema creation result: ${result}`, "db");
+    try {
+      // Check if users table exists
+      const { pool } = await import("./db");
+      const { rows } = await pool.query(`
+        SELECT EXISTS (
+          SELECT FROM information_schema.tables 
+          WHERE table_schema = 'public' 
+          AND table_name = 'users'
+        ) as exists
+      `);
+      
+      // If users table doesn't exist, run drizzle push
+      if (!rows[0].exists) {
+        log("Users table doesn't exist, running drizzle-kit push", "db");
+        const result = await import("child_process").then(({ execSync }) => {
+          return execSync("npm run db:push").toString();
+        });
+        log(`Database schema creation result: ${result}`, "db");
+      } else {
+        log("Database tables already exist, skipping schema push", "db");
+      }
+    } catch (error) {
+      log(`Error checking database tables: ${error}`, "db");
+      // Run schema push anyway as fallback
+      const result = await import("child_process").then(({ execSync }) => {
+        return execSync("npm run db:push").toString();
+      });
+      log(`Database schema creation result: ${result}`, "db");
+    }
     
     // Seed initial users
     if (storage instanceof DatabaseStorage) {
