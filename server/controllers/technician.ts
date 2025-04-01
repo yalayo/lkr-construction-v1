@@ -188,8 +188,9 @@ export function setupTechnicianRoutes(app: Express) {
         propertyType: job.propertyType,
         notes: job.notes,
         technicianId: job.technicianId,
-        completionNotes: job.completionNotes,
-        materialUsed: job.materialUsed
+        // Handle missing columns with fallbacks
+        completionNotes: job.completionNotes || null,
+        materialUsed: job.materialUsed || null
       }));
       
       res.json(formattedJobs);
@@ -285,8 +286,9 @@ export function setupTechnicianRoutes(app: Express) {
         propertyType: job.propertyType,
         notes: job.notes,
         technicianId: job.technicianId,
-        completionNotes: job.completionNotes,
-        materialUsed: job.materialUsed
+        // Handle missing columns with fallbacks
+        completionNotes: job.completionNotes || null,
+        materialUsed: job.materialUsed || null
       }));
       
       res.json(formattedJobs);

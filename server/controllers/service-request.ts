@@ -452,8 +452,22 @@ export function setupServiceRequestRoutes(app: Express) {
       
       if (status) updateData.status = status;
       if (notes) updateData.notes = notes;
-      if (completionNotes) updateData.completionNotes = completionNotes;
-      if (materialUsed) updateData.materialUsed = materialUsed;
+      
+      // For fields that might be missing in the DB schema, store them in notes field as a fallback
+      if (completionNotes || materialUsed) {
+        const existingNotes = notes || serviceRequest.notes || '';
+        let additionalNotes = '';
+        
+        if (completionNotes) {
+          additionalNotes += `\n\nCompletion Notes: ${completionNotes}`;
+        }
+        
+        if (materialUsed) {
+          additionalNotes += `\n\nMaterials Used: ${materialUsed}`;
+        }
+        
+        updateData.notes = existingNotes + additionalNotes;
+      }
       
       // If status is changing to completed, set the completion date
       if (status === "completed") {
