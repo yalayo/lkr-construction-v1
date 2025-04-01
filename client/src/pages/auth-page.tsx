@@ -106,19 +106,32 @@ const AuthPage = () => {
       
       const userData = await response.json();
       console.log("Login successful, user data:", userData);
+      console.log("User role:", userData.role);
       
       // Manually update the query cache
       if (authContext) {
         // Simulate the onSuccess handler from the mutation
+        console.log("Updating query cache with user data");
         queryClient.setQueryData(["/api/user"], userData);
         
         // Redirect based on role
-        if (userData.role === "client") {
-          navigate("/client-dashboard");
-        } else if (userData.role === "owner") {
-          navigate("/owner-dashboard");
-        } else if (userData.role === "admin") {
-          navigate("/admin-dashboard");
+        console.log("Attempting redirection based on role:", userData.role);
+        
+        try {
+          if (userData.role === "client") {
+            console.log("Redirecting to client dashboard");
+            setTimeout(() => navigate("/client-dashboard"), 500);
+          } else if (userData.role === "owner") {
+            console.log("Redirecting to owner dashboard");
+            setTimeout(() => navigate("/owner-dashboard"), 500);
+          } else if (userData.role === "admin") {
+            console.log("Redirecting to admin dashboard");
+            setTimeout(() => navigate("/admin-dashboard"), 500);
+          } else {
+            console.error("Unknown role:", userData.role);
+          }
+        } catch (navError) {
+          console.error("Navigation error:", navError);
         }
       }
     } catch (error) {
