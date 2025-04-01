@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { apiRequest } from "@/lib/queryClient";
 import { useQuery } from "@tanstack/react-query";
+import { ServiceRequest } from "@shared/schema";
 
 // Helper function for urgency colors
 const urgencyColor = (urgency: string) => {
@@ -23,7 +24,7 @@ const urgencyColor = (urgency: string) => {
 };
 
 // Service request component
-const ServiceRequestCard = ({ request }: { request: any }) => {
+const ServiceRequestCard = ({ request }: { request: ServiceRequest }) => {
   const getUrgencyColor = (urgency: string) => {
     switch (urgency.toLowerCase()) {
       case 'emergency': return 'text-red-500';
@@ -55,9 +56,9 @@ const ServiceRequestCard = ({ request }: { request: any }) => {
     }
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | Date | null) => {
     if (!dateString) return 'Not specified';
-    const date = new Date(dateString);
+    const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
     return new Intl.DateTimeFormat('en-US', {
       month: 'short',
       day: 'numeric',
@@ -132,16 +133,16 @@ const OwnerDashboard = () => {
   
   // Fetch all service requests
   const { 
-    data: serviceRequests = [], 
+    data: serviceRequests = [] as ServiceRequest[], 
     isLoading: isLoadingRequests,
     error: requestsError
-  } = useQuery({
+  } = useQuery<ServiceRequest[]>({
     queryKey: ['/api/service-requests'],
     queryFn: async () => {
       try {
         console.log('Fetching service requests for dashboard');
         const res = await apiRequest('GET', '/api/service-requests');
-        const data = await res.json();
+        const data: ServiceRequest[] = await res.json();
         console.log('Received service requests:', data.length);
         return data;
       } catch (error) {
@@ -258,8 +259,18 @@ const OwnerDashboard = () => {
   
   const isLoading = isLoadingRequests || isLoadingDashboard;
   
-  // Sort service requests by creation date (oldest first for FIFO)
+  // Sort service requests by urgency first, then by creation date (oldest first for FIFO)
   const sortedRequests = [...(serviceRequests || [])].sort((a, b) => {
+    // Prioritize by urgency first (emergency > urgent > standard > flexible)
+    const urgencyOrder: Record<string, number> = { 'emergency': 0, 'urgent': 1, 'standard': 2, 'flexible': 3 };
+    const urgencyA = urgencyOrder[a.urgency?.toLowerCase() || ''] ?? 4;
+    const urgencyB = urgencyOrder[b.urgency?.toLowerCase() || ''] ?? 4;
+    
+    if (urgencyA !== urgencyB) {
+      return urgencyA - urgencyB; // Sort by urgency first
+    }
+    
+    // If urgency is the same, sort by creation date (oldest first for FIFO)
     return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
   });
 
@@ -324,7 +335,7 @@ const OwnerDashboard = () => {
             <CardHeader className="pb-0">
               <CardTitle className="text-xl font-semibold">Service Requests</CardTitle>
               <CardDescription>
-                Showing service requests in order of arrival (First In, First Out)
+                Showing service requests by urgency, then by arrival time (First In, First Out)
               </CardDescription>
             </CardHeader>
             <CardContent className="p-6">

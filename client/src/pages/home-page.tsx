@@ -2,13 +2,14 @@ import { useState, useEffect } from "react";
 import { useSearch, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, ArrowRight, Check } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Loader2 } from "lucide-react";
 import ServiceType from "@/components/service-request/service-type";
 import ServiceDetails from "@/components/service-request/service-details";
 import ContactInfo from "@/components/service-request/contact-info";
 import Confirm from "@/components/service-request/confirm";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useAuth } from "@/hooks/use-auth";
 
 const steps = [
   { id: 1, title: "Service Type" },
@@ -21,6 +22,7 @@ const HomePage = () => {
   const search = useSearch();
   const [, navigate] = useLocation();
   const { toast } = useToast();
+  const { user, isLoading } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     serviceType: "",
@@ -37,6 +39,20 @@ const HomePage = () => {
     preferredTime: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Redirect logged-in users to their appropriate dashboard
+  useEffect(() => {
+    if (user) {
+      console.log("User is logged in as:", user.role);
+      if (user.role === "owner") {
+        navigate("/owner-dashboard");
+      } else if (user.role === "admin") {
+        navigate("/admin-dashboard");
+      } else if (user.role === "client") {
+        navigate("/client-dashboard");
+      }
+    }
+  }, [user, navigate]);
 
   // Set initial service type from URL query parameter
   useEffect(() => {
@@ -161,6 +177,15 @@ const HomePage = () => {
         return null;
     }
   };
+
+  // Show loading state while authentication check is in progress
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[500px]">
+        <Loader2 className="h-8 w-8 animate-spin text-black" />
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
