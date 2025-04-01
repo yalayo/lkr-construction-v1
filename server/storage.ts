@@ -1,4 +1,13 @@
-import { users, User, InsertUser, serviceRequests, ServiceRequest, InsertServiceRequest, leads, Lead, InsertLead, appointments, Appointment, InsertAppointment, transactions, Transaction, InsertTransaction } from "@shared/schema";
+import { 
+  users, User, InsertUser, 
+  serviceRequests, ServiceRequest, InsertServiceRequest, 
+  leads, Lead, InsertLead, 
+  appointments, Appointment, InsertAppointment, 
+  transactions, Transaction, InsertTransaction,
+  inventoryItems, InventoryItem, InsertInventoryItem,
+  inventoryTransactions, InventoryTransaction, InsertInventoryTransaction,
+  serviceRequestItems, ServiceRequestItem, InsertServiceRequestItem
+} from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 import { eq, and, sql, asc, gt, lt, gte, lte } from "drizzle-orm";
@@ -43,6 +52,23 @@ export interface IStorage {
   createTransaction(transaction: InsertTransaction): Promise<Transaction>;
   getAllTransactions(): Promise<Transaction[]>;
   getTransactionsByPeriod(startDate: Date, endDate: Date): Promise<Transaction[]>;
+  
+  // Inventory operations
+  createInventoryItem(item: InsertInventoryItem): Promise<InventoryItem>;
+  getInventoryItem(id: number): Promise<InventoryItem | undefined>;
+  getAllInventoryItems(): Promise<InventoryItem[]>;
+  getLowStockItems(): Promise<InventoryItem[]>;
+  updateInventoryItem(id: number, data: Partial<InventoryItem>): Promise<InventoryItem | undefined>;
+  
+  // Inventory Transaction operations
+  createInventoryTransaction(transaction: InsertInventoryTransaction): Promise<InventoryTransaction>;
+  getInventoryTransactionsByItemId(itemId: number): Promise<InventoryTransaction[]>;
+  getInventoryTransactionsByServiceRequest(serviceRequestId: number): Promise<InventoryTransaction[]>;
+  
+  // Service Request Items operations
+  addItemToServiceRequest(item: InsertServiceRequestItem): Promise<ServiceRequestItem>;
+  getServiceRequestItems(serviceRequestId: number): Promise<ServiceRequestItem[]>;
+  removeItemFromServiceRequest(id: number): Promise<void>;
   
   // Session store
   sessionStore: session.Store;
@@ -153,7 +179,7 @@ export class DatabaseStorage implements IStorage {
           previousIssue: request.previousIssue === undefined ? false : request.previousIssue,
           preferredDate: request.preferredDate || null,
           preferredTime: request.preferredTime || null,
-          userId: ('userId' in request) ? request.userId : null
+          userId: null // This field needs to be provided separately after user creation
         })
         .returning();
       
@@ -295,6 +321,149 @@ export class DatabaseStorage implements IStorage {
         )
       );
   }
+
+  // Inventory methods
+  async createInventoryItem(item: InsertInventoryItem): Promise<InventoryItem> {
+    const [inventoryItem] = await db
+      .insert(inventoryItems)
+      .values(item)
+      .returning();
+    
+    return inventoryItem;
+  }
+  
+  async getInventoryItem(id: number): Promise<InventoryItem | undefined> {
+    const [item] = await db
+      .select()
+      .from(inventoryItems)
+      .where(eq(inventoryItems.id, id));
+    
+    return item;
+  }
+  
+  async getAllInventoryItems(): Promise<InventoryItem[]> {
+    return await db.select().from(inventoryItems);
+  }
+  
+  async getLowStockItems(): Promise<InventoryItem[]> {
+    return await db
+      .select()
+      .from(inventoryItems)
+      .where(
+        sql`${inventoryItems.quantity} <= ${inventoryItems.minQuantity}`
+      );
+  }
+  
+  async updateInventoryItem(id: number, data: Partial<InventoryItem>): Promise<InventoryItem | undefined> {
+    const [updatedItem] = await db
+      .update(inventoryItems)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(inventoryItems.id, id))
+      .returning();
+    
+    return updatedItem;
+  }
+  
+  // Inventory Transaction methods
+  async createInventoryTransaction(transaction: InsertInventoryTransaction): Promise<InventoryTransaction> {
+    // Create the transaction
+    const [inventoryTransaction] = await db
+      .insert(inventoryTransactions)
+      .values(transaction)
+      .returning();
+    
+    // Update the inventory item quantity
+    const [item] = await db
+      .select()
+      .from(inventoryItems)
+      .where(eq(inventoryItems.id, transaction.itemId));
+    
+    if (item) {
+      const newQuantity = item.quantity + transaction.quantity;
+      await db
+        .update(inventoryItems)
+        .set({ 
+          quantity: newQuantity,
+          lastRestocked: transaction.quantity > 0 ? new Date() : item.lastRestocked,
+          updatedAt: new Date()
+        })
+        .where(eq(inventoryItems.id, transaction.itemId));
+    }
+    
+    return inventoryTransaction;
+  }
+  
+  async getInventoryTransactionsByItemId(itemId: number): Promise<InventoryTransaction[]> {
+    return await db
+      .select()
+      .from(inventoryTransactions)
+      .where(eq(inventoryTransactions.itemId, itemId));
+  }
+  
+  async getInventoryTransactionsByServiceRequest(serviceRequestId: number): Promise<InventoryTransaction[]> {
+    return await db
+      .select()
+      .from(inventoryTransactions)
+      .where(eq(inventoryTransactions.serviceRequestId, serviceRequestId));
+  }
+  
+  // Service Request Items methods
+  async addItemToServiceRequest(item: InsertServiceRequestItem): Promise<ServiceRequestItem> {
+    // Create the service request item record
+    const [serviceRequestItem] = await db
+      .insert(serviceRequestItems)
+      .values({
+        serviceRequestId: item.serviceRequestId,
+        itemId: item.itemId,
+        quantity: item.quantity,
+        unitCost: item.unitCost
+      })
+      .returning();
+    
+    // Create the corresponding inventory transaction (removing from inventory)
+    await this.createInventoryTransaction({
+      itemId: item.itemId,
+      quantity: -item.quantity, // Negative quantity means removal
+      transactionType: 'use',
+      serviceRequestId: item.serviceRequestId,
+      userId: 1, // Default to admin - this should be changed to the actual user
+      notes: `Used in service request #${item.serviceRequestId}`
+    });
+    
+    return serviceRequestItem;
+  }
+  
+  async getServiceRequestItems(serviceRequestId: number): Promise<ServiceRequestItem[]> {
+    return await db
+      .select()
+      .from(serviceRequestItems)
+      .where(eq(serviceRequestItems.serviceRequestId, serviceRequestId));
+  }
+  
+  async removeItemFromServiceRequest(id: number): Promise<void> {
+    // Get the item first to know how much to add back to inventory
+    const [item] = await db
+      .select()
+      .from(serviceRequestItems)
+      .where(eq(serviceRequestItems.id, id));
+    
+    if (item) {
+      // Create a transaction to add the items back to inventory
+      await this.createInventoryTransaction({
+        itemId: item.itemId,
+        quantity: item.quantity, // Positive quantity means addition
+        transactionType: 'return',
+        serviceRequestId: item.serviceRequestId,
+        userId: 1, // Default to admin - this should be changed to the actual user
+        notes: `Returned from service request #${item.serviceRequestId}`
+      });
+      
+      // Remove the service request item
+      await db
+        .delete(serviceRequestItems)
+        .where(eq(serviceRequestItems.id, id));
+    }
+  }
 }
 
 // Memory storage for fallback if needed
@@ -304,12 +473,18 @@ export class MemStorage implements IStorage {
   private leads: Map<number, Lead>;
   private appointments: Map<number, Appointment>;
   private transactions: Map<number, Transaction>;
+  private inventoryItems: Map<number, InventoryItem>;
+  private inventoryTransactions: Map<number, InventoryTransaction>;
+  private serviceRequestItems: Map<number, ServiceRequestItem>;
   currentId: {
     users: number;
     serviceRequests: number;
     leads: number;
     appointments: number;
     transactions: number;
+    inventoryItems: number;
+    inventoryTransactions: number;
+    serviceRequestItems: number;
   };
   sessionStore: session.Store;
 
@@ -319,13 +494,19 @@ export class MemStorage implements IStorage {
     this.leads = new Map();
     this.appointments = new Map();
     this.transactions = new Map();
+    this.inventoryItems = new Map();
+    this.inventoryTransactions = new Map();
+    this.serviceRequestItems = new Map();
     
     this.currentId = {
       users: 1,
       serviceRequests: 1,
       leads: 1,
       appointments: 1,
-      transactions: 1
+      transactions: 1,
+      inventoryItems: 1,
+      inventoryTransactions: 1,
+      serviceRequestItems: 1
     };
     
     this.sessionStore = new MemoryStore({
@@ -429,7 +610,7 @@ export class MemStorage implements IStorage {
       status: "new",
       createdAt,
       updatedAt,
-      userId: ('userId' in request) ? request.userId : null,
+      userId: null, // Will be set after user creation
       technicianId: null,
       technicianName: null,
       cost: null,
@@ -438,7 +619,13 @@ export class MemStorage implements IStorage {
       previousIssue: request.previousIssue ?? false,
       preferredDate: request.preferredDate || null,
       preferredTime: request.preferredTime || null,
-      completedDate: null
+      completedDate: null,
+      quotedAmount: null,
+      quoteDate: null,
+      quoteExpiryDate: null,
+      quoteNotes: null,
+      quoteToken: null,
+      quoteAcceptedDate: null
     };
     
     this.serviceRequests.set(id, serviceRequest);
@@ -581,6 +768,145 @@ export class MemStorage implements IStorage {
         const transDate = new Date(transaction.date);
         return transDate >= startDate && transDate <= endDate;
       });
+  }
+
+  // Inventory methods
+  async createInventoryItem(item: InsertInventoryItem): Promise<InventoryItem> {
+    const id = this.currentId.inventoryItems++;
+    const createdAt = new Date();
+    const updatedAt = new Date();
+    const lastRestocked = new Date();
+    
+    const inventoryItem: InventoryItem = {
+      id,
+      name: item.name,
+      description: item.description || null,
+      category: item.category,
+      sku: item.sku,
+      quantity: item.quantity || 0,
+      minQuantity: item.minQuantity || 5,
+      cost: item.cost,
+      supplier: item.supplier || null,
+      location: item.location || null,
+      lastRestocked,
+      createdAt,
+      updatedAt
+    };
+    
+    this.inventoryItems.set(id, inventoryItem);
+    return inventoryItem;
+  }
+  
+  async getInventoryItem(id: number): Promise<InventoryItem | undefined> {
+    return this.inventoryItems.get(id);
+  }
+  
+  async getAllInventoryItems(): Promise<InventoryItem[]> {
+    return Array.from(this.inventoryItems.values());
+  }
+  
+  async getLowStockItems(): Promise<InventoryItem[]> {
+    return Array.from(this.inventoryItems.values())
+      .filter(item => item.quantity <= item.minQuantity);
+  }
+  
+  async updateInventoryItem(id: number, data: Partial<InventoryItem>): Promise<InventoryItem | undefined> {
+    const item = await this.getInventoryItem(id);
+    if (!item) return undefined;
+    
+    const updatedItem = { ...item, ...data, updatedAt: new Date() };
+    this.inventoryItems.set(id, updatedItem);
+    return updatedItem;
+  }
+  
+  // Inventory Transaction methods
+  async createInventoryTransaction(transaction: InsertInventoryTransaction): Promise<InventoryTransaction> {
+    const id = this.currentId.inventoryTransactions++;
+    const transactionDate = new Date();
+    
+    const inventoryTransaction: InventoryTransaction = {
+      id,
+      itemId: transaction.itemId,
+      quantity: transaction.quantity,
+      transactionType: transaction.transactionType,
+      userId: transaction.userId,
+      notes: transaction.notes || null,
+      serviceRequestId: transaction.serviceRequestId || null,
+      transactionDate
+    };
+    
+    this.inventoryTransactions.set(id, inventoryTransaction);
+    
+    // Update the inventory item quantity
+    const item = await this.getInventoryItem(transaction.itemId);
+    if (item) {
+      const newQuantity = item.quantity + transaction.quantity;
+      await this.updateInventoryItem(transaction.itemId, {
+        quantity: newQuantity,
+        lastRestocked: transaction.quantity > 0 ? new Date() : item.lastRestocked
+      });
+    }
+    
+    return inventoryTransaction;
+  }
+  
+  async getInventoryTransactionsByItemId(itemId: number): Promise<InventoryTransaction[]> {
+    return Array.from(this.inventoryTransactions.values())
+      .filter(transaction => transaction.itemId === itemId);
+  }
+  
+  async getInventoryTransactionsByServiceRequest(serviceRequestId: number): Promise<InventoryTransaction[]> {
+    return Array.from(this.inventoryTransactions.values())
+      .filter(transaction => transaction.serviceRequestId === serviceRequestId);
+  }
+  
+  // Service Request Items methods
+  async addItemToServiceRequest(item: InsertServiceRequestItem): Promise<ServiceRequestItem> {
+    const id = this.currentId.serviceRequestItems++;
+    const addedAt = new Date();
+    
+    const serviceRequestItem: ServiceRequestItem = {
+      ...item,
+      id,
+      addedAt
+    };
+    
+    this.serviceRequestItems.set(id, serviceRequestItem);
+    
+    // Create the corresponding inventory transaction (removing from inventory)
+    await this.createInventoryTransaction({
+      itemId: item.itemId,
+      quantity: -item.quantity, // Negative quantity means removal
+      transactionType: 'use',
+      serviceRequestId: item.serviceRequestId,
+      userId: 1, // Default to admin - this should be changed to the actual user
+      notes: `Used in service request #${item.serviceRequestId}`
+    });
+    
+    return serviceRequestItem;
+  }
+  
+  async getServiceRequestItems(serviceRequestId: number): Promise<ServiceRequestItem[]> {
+    return Array.from(this.serviceRequestItems.values())
+      .filter(item => item.serviceRequestId === serviceRequestId);
+  }
+  
+  async removeItemFromServiceRequest(id: number): Promise<void> {
+    const item = this.serviceRequestItems.get(id);
+    if (!item) return;
+    
+    // Create a transaction to add the items back to inventory
+    await this.createInventoryTransaction({
+      itemId: item.itemId,
+      quantity: item.quantity, // Positive quantity means addition
+      transactionType: 'return',
+      serviceRequestId: item.serviceRequestId,
+      userId: 1, // Default to admin - this should be changed to the actual user
+      notes: `Returned from service request #${item.serviceRequestId}`
+    });
+    
+    // Remove the service request item
+    this.serviceRequestItems.delete(id);
   }
 }
 

@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Download, Upload, RefreshCw, File, FileText, Database, Settings, Users, Activity } from "lucide-react";
+import { Loader2, Download, Upload, RefreshCw, File, FileText, Database, Settings, Users, Activity, Package } from "lucide-react";
 import UserManagement from "@/components/dashboard/user-management";
 import { useAuth } from "@/hooks/use-auth";
 import { Separator } from "@/components/ui/separator";
@@ -145,6 +145,10 @@ const AdminDashboard = () => {
                 <Users className="h-4 w-4" />
                 <span>User Management</span>
               </TabsTrigger>
+              <TabsTrigger value="inventory" className="flex items-center gap-1.5">
+                <Package className="h-4 w-4" />
+                <span>Inventory</span>
+              </TabsTrigger>
               <TabsTrigger value="settings" className="flex items-center gap-1.5">
                 <Settings className="h-4 w-4" />
                 <span>System Settings</span>
@@ -161,6 +165,71 @@ const AdminDashboard = () => {
             
             <TabsContent value="users">
               <UserManagement users={users} />
+            </TabsContent>
+            
+            <TabsContent value="inventory">
+              <div className="bg-white rounded-lg border">
+                <div className="p-6">
+                  <div className="flex justify-between items-center mb-4">
+                    <div>
+                      <h3 className="text-lg font-medium text-neutral-800">Inventory Management</h3>
+                      <p className="text-sm text-neutral-600">Manage your inventory items and stock levels</p>
+                    </div>
+                    <Button onClick={() => window.location.href = "/inventory"} className="gap-1">
+                      <Package className="h-4 w-4" />
+                      <span>Go to Inventory</span>
+                    </Button>
+                  </div>
+                  
+                  <div className="mt-6 space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <Card className="bg-blue-50">
+                        <CardContent className="p-6">
+                          <h4 className="text-lg font-medium text-blue-700 mb-2">Inventory Overview</h4>
+                          <p className="text-sm text-blue-600">
+                            View and manage all your inventory items, update stock levels, and track inventory transactions
+                          </p>
+                          <p className="mt-4 text-xs text-blue-800">
+                            The full inventory management system provides detailed views of your stock levels, allows for item categorization, 
+                            and tracks all stock movements
+                          </p>
+                        </CardContent>
+                      </Card>
+                      
+                      <Card className="bg-amber-50">
+                        <CardContent className="p-6">
+                          <h4 className="text-lg font-medium text-amber-700 mb-2">Low Stock Alerts</h4>
+                          <p className="text-sm text-amber-600">
+                            Get notified about inventory items that are low in stock and need replenishment
+                          </p>
+                          <p className="mt-4 text-xs text-amber-800">
+                            Set minimum threshold levels for each item and receive automatic alerts when stock falls below these levels
+                          </p>
+                        </CardContent>
+                      </Card>
+                      
+                      <Card className="bg-green-50">
+                        <CardContent className="p-6">
+                          <h4 className="text-lg font-medium text-green-700 mb-2">Inventory Reporting</h4>
+                          <p className="text-sm text-green-600">
+                            Generate reports on inventory usage, stock value, and restock requirements
+                          </p>
+                          <p className="mt-4 text-xs text-green-800">
+                            Access detailed reports to optimize your inventory management and reduce costs
+                          </p>
+                        </CardContent>
+                      </Card>
+                    </div>
+                    
+                    <div className="flex justify-center mt-8">
+                      <Button onClick={() => window.location.href = "/inventory"} size="lg" className="gap-2">
+                        <Package className="h-5 w-5" />
+                        <span>Access Full Inventory System</span>
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </TabsContent>
             
             <TabsContent value="settings">

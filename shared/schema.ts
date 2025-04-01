@@ -178,3 +178,70 @@ export const quoteSubmissionSchema = z.object({
 });
 
 export type QuoteSubmission = z.infer<typeof quoteSubmissionSchema>;
+
+// Inventory tables
+export const inventoryItems = pgTable("inventory_items", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  category: text("category").notNull(), // electrical, plumbing, tools, etc.
+  sku: text("sku").notNull().unique(),
+  quantity: integer("quantity").notNull().default(0),
+  minQuantity: integer("min_quantity").notNull().default(5), // Threshold for low stock alerts
+  cost: decimal("cost", { precision: 10, scale: 2 }).notNull(),
+  supplier: text("supplier"),
+  location: text("location"), // Where the item is stored
+  lastRestocked: timestamp("last_restocked").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Inventory transactions record all movements of inventory
+export const inventoryTransactions = pgTable("inventory_transactions", {
+  id: serial("id").primaryKey(),
+  itemId: integer("item_id").notNull().references(() => inventoryItems.id),
+  quantity: integer("quantity").notNull(), // Positive for additions, negative for removals
+  transactionType: text("transaction_type").notNull(), // purchase, use, adjustment, etc.
+  serviceRequestId: integer("service_request_id").references(() => serviceRequests.id),
+  userId: integer("user_id").notNull().references(() => users.id), // Who performed the transaction
+  notes: text("notes"),
+  transactionDate: timestamp("transaction_date").defaultNow().notNull(),
+});
+
+// Items used in service requests
+export const serviceRequestItems = pgTable("service_request_items", {
+  id: serial("id").primaryKey(),
+  serviceRequestId: integer("service_request_id").notNull().references(() => serviceRequests.id),
+  itemId: integer("item_id").notNull().references(() => inventoryItems.id),
+  quantity: integer("quantity").notNull(),
+  unitCost: decimal("unit_cost", { precision: 10, scale: 2 }).notNull(),
+  addedAt: timestamp("added_at").defaultNow().notNull(),
+});
+
+// Create insert schemas for the new tables
+export const insertInventoryItemSchema = createInsertSchema(inventoryItems).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  lastRestocked: true
+});
+
+export const insertInventoryTransactionSchema = createInsertSchema(inventoryTransactions).omit({
+  id: true,
+  transactionDate: true
+});
+
+export const insertServiceRequestItemSchema = createInsertSchema(serviceRequestItems).omit({
+  id: true,
+  addedAt: true
+});
+
+// Define types for the new tables
+export type InventoryItem = typeof inventoryItems.$inferSelect;
+export type InsertInventoryItem = z.infer<typeof insertInventoryItemSchema>;
+
+export type InventoryTransaction = typeof inventoryTransactions.$inferSelect;
+export type InsertInventoryTransaction = z.infer<typeof insertInventoryTransactionSchema>;
+
+export type ServiceRequestItem = typeof serviceRequestItems.$inferSelect;
+export type InsertServiceRequestItem = z.infer<typeof insertServiceRequestItemSchema>;

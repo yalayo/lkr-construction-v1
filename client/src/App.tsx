@@ -8,6 +8,7 @@ import OwnerDashboard from "@/pages/owner-dashboard";
 import AdminDashboard from "@/pages/admin-dashboard";
 import AccountSettings from "@/pages/account-settings";
 import QuoteAccepted from "@/pages/quote-accepted";
+import InventoryManagement from "@/pages/inventory-management";
 import { ProtectedRoute } from "./lib/protected-route";
 import Navbar from "./components/layout/navbar";
 import Footer from "./components/layout/footer";
@@ -22,6 +23,7 @@ const AccountSettingsWrapper = () => <AccountSettings />;
 const ClientDashboardWrapper = () => <ClientDashboard />;
 const OwnerDashboardWrapper = () => <OwnerDashboard />;
 const AdminDashboardWrapper = () => <AdminDashboard />;
+const InventoryManagementWrapper = () => <InventoryManagement />;
 
 // Simple onboarding component to show the wizard
 function OnboardingIntegration() {
@@ -94,6 +96,7 @@ function App() {
           <ProtectedRoute path="/client-dashboard" component={ClientDashboardWrapper} />
           <ProtectedRoute path="/owner-dashboard" component={OwnerDashboardWrapper} />
           <ProtectedRoute path="/admin-dashboard" component={AdminDashboardWrapper} />
+          <ProtectedRoute path="/inventory" component={InventoryManagementWrapper} />
           <ProtectedRoute path="/account-settings" component={AccountSettingsWrapper} />
           <Route component={NotFound} />
         </Switch>
