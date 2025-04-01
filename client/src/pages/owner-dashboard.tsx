@@ -133,12 +133,21 @@ const OwnerDashboard = () => {
   // Fetch all service requests
   const { 
     data: serviceRequests = [], 
-    isLoading: isLoadingRequests 
+    isLoading: isLoadingRequests,
+    error: requestsError
   } = useQuery({
     queryKey: ['/api/service-requests'],
     queryFn: async () => {
-      const res = await apiRequest('GET', '/api/service-requests');
-      return await res.json();
+      try {
+        console.log('Fetching service requests for dashboard');
+        const res = await apiRequest('GET', '/api/service-requests');
+        const data = await res.json();
+        console.log('Received service requests:', data.length);
+        return data;
+      } catch (error) {
+        console.error('Error fetching service requests:', error);
+        throw error;
+      }
     }
   });
   
@@ -254,10 +263,32 @@ const OwnerDashboard = () => {
     return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
   });
 
+  // Show loading state
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[500px]">
         <Loader2 className="h-8 w-8 animate-spin text-black" />
+      </div>
+    );
+  }
+
+  // Show error state if there was an error fetching service requests
+  if (requestsError) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[500px] gap-4">
+        <AlertCircle className="h-12 w-12 text-red-500" />
+        <h2 className="text-xl font-semibold text-red-500">Error Loading Dashboard</h2>
+        <p className="text-gray-600">
+          {requestsError instanceof Error 
+            ? requestsError.message 
+            : 'There was an error loading service requests. Please try again.'}
+        </p>
+        <Button 
+          onClick={() => window.location.reload()}
+          variant="outline"
+        >
+          Retry
+        </Button>
       </div>
     );
   }

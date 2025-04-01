@@ -73,13 +73,20 @@ export function setupServiceRequestRoutes(app: Express) {
   // Get all service requests (for owner and admin dashboard)
   app.get("/api/service-requests", async (req, res, next) => {
     try {
-      if (!req.isAuthenticated() || (req.user.role !== "owner" && req.user.role !== "admin")) {
-        return res.status(403).send("Unauthorized");
+      if (!req.isAuthenticated()) {
+        return res.status(401).send("Unauthorized");
+      }
+      
+      if (req.user.role !== "owner" && req.user.role !== "admin") {
+        return res.status(403).send("Forbidden");
       }
       
       const serviceRequests = await storage.getAllServiceRequests();
+      console.log('Fetching service requests for:', req.user.username, 'with role:', req.user.role);
+      console.log('Number of service requests found:', serviceRequests.length);
       res.json(serviceRequests);
     } catch (error) {
+      console.error('Error fetching service requests:', error);
       next(error);
     }
   });
