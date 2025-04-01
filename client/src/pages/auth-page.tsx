@@ -78,9 +78,20 @@ const AuthPage = () => {
   });
 
   // Login form submit handler
-  const onLoginSubmit = (values: LoginFormValues) => {
-    if (loginMutation && typeof loginMutation.mutate === 'function') {
-      loginMutation.mutate(values);
+  const onLoginSubmit = async (values: LoginFormValues) => {
+    try {
+      console.log("Login form submitted with values:", values);
+      
+      if (!loginMutation || typeof loginMutation.mutateAsync !== 'function') {
+        console.error("Login mutation not available");
+        return;
+      }
+      
+      console.log("Attempting login...");
+      await loginMutation.mutateAsync(values);
+      console.log("Login mutation completed");
+    } catch (error) {
+      console.error("Login error:", error);
     }
   };
 
