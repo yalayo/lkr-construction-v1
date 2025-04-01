@@ -108,31 +108,21 @@ const AuthPage = () => {
       console.log("Login successful, user data:", userData);
       console.log("User role:", userData.role);
       
-      // Manually update the query cache
-      if (authContext) {
-        // Simulate the onSuccess handler from the mutation
-        console.log("Updating query cache with user data");
-        queryClient.setQueryData(["/api/user"], userData);
-        
-        // Redirect based on role
-        console.log("Attempting redirection based on role:", userData.role);
-        
-        try {
-          if (userData.role === "client") {
-            console.log("Redirecting to client dashboard");
-            setTimeout(() => navigate("/client-dashboard"), 500);
-          } else if (userData.role === "owner") {
-            console.log("Redirecting to owner dashboard");
-            setTimeout(() => navigate("/owner-dashboard"), 500);
-          } else if (userData.role === "admin") {
-            console.log("Redirecting to admin dashboard");
-            setTimeout(() => navigate("/admin-dashboard"), 500);
-          } else {
-            console.error("Unknown role:", userData.role);
-          }
-        } catch (navError) {
-          console.error("Navigation error:", navError);
-        }
+      // Force a hard redirect to the appropriate dashboard
+      console.log("Redirecting based on role:", userData.role);
+      
+      // Directly redirecting with window.location instead of using wouter
+      if (userData.role === "client") {
+        console.log("Redirecting to client dashboard");
+        window.location.href = "/client-dashboard";
+      } else if (userData.role === "owner") {
+        console.log("Redirecting to owner dashboard");
+        window.location.href = "/owner-dashboard";
+      } else if (userData.role === "admin") {
+        console.log("Redirecting to admin dashboard");
+        window.location.href = "/admin-dashboard";
+      } else {
+        console.error("Unknown role:", userData.role);
       }
     } catch (error) {
       console.error("Login error:", error);
@@ -177,14 +167,8 @@ const AuthPage = () => {
       const userData = await response.json();
       console.log("Registration successful, user data:", userData);
       
-      // Manually update the query cache
-      if (authContext) {
-        // Simulate the onSuccess handler from the mutation
-        queryClient.setQueryData(["/api/user"], userData);
-        
-        // Redirect to client dashboard for new users
-        navigate("/client-dashboard");
-      }
+      // Force a hard redirect to the client dashboard for new users
+      window.location.href = "/client-dashboard";
     } catch (error) {
       console.error("Registration error:", error);
     } finally {
