@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -69,7 +69,7 @@ const UserManagement = ({ users }: UserManagementProps) => {
   });
   
   // Reset form with user data when editing user changes
-  useState(() => {
+  useEffect(() => {
     if (editingUser) {
       form.reset({
         name: editingUser.name,
@@ -77,7 +77,7 @@ const UserManagement = ({ users }: UserManagementProps) => {
         role: editingUser.role as any
       });
     }
-  });
+  }, [editingUser, form]);
   
   // Filter users based on selected filters and search query
   const filteredUsers = users.filter(user => {

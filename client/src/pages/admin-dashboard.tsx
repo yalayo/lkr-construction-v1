@@ -1,16 +1,80 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2 } from "lucide-react";
 import UserManagement from "@/components/dashboard/user-management";
+import { useAuth } from "@/hooks/use-auth";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("users");
+  const [users, setUsers] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { user } = useAuth();
   
-  const { data: users, isLoading } = useQuery({
-    queryKey: ['/api/users'],
-  });
+  useEffect(() => {
+    async function fetchUsers() {
+      try {
+        setIsLoading(true);
+        // Create mock data for testing until the API is fully implemented
+        console.log("Current user:", user);
+        
+        if (user && user.role === "admin") {
+          // Mock data for administrator dashboard
+          const mockUsers = [
+            {
+              id: 1,
+              username: "admin",
+              name: "Admin User",
+              email: "admin@elecplumb.com",
+              role: "admin",
+              createdAt: new Date().toISOString()
+            },
+            {
+              id: 2,
+              username: "owner",
+              name: "Business Owner",
+              email: "owner@elecplumb.com",
+              role: "owner",
+              createdAt: new Date().toISOString()
+            },
+            {
+              id: 3,
+              username: "technician",
+              name: "Tech Smith",
+              email: "tech@elecplumb.com",
+              role: "technician",
+              createdAt: new Date().toISOString()
+            },
+            {
+              id: 4,
+              username: "johndoe",
+              name: "John Doe",
+              email: "john@example.com",
+              role: "client",
+              createdAt: new Date().toISOString()
+            }
+          ];
+          
+          setUsers(mockUsers);
+        }
+      } catch (error) {
+        console.error('Error setting up user data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    
+    fetchUsers();
+  }, [user]);
+  
+  // If no user data is available, we're not authenticated
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-[500px]">
+        <p className="text-neutral-500">You must be logged in to view this page.</p>
+      </div>
+    );
+  }
   
   if (isLoading) {
     return (
