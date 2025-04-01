@@ -2,7 +2,7 @@ import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Zap, Droplet, Menu, X, User, LogOut, Settings } from "lucide-react";
 import { useState, useContext } from "react";
-import { AuthContext, useAuth } from "@/hooks/use-auth";
+import { AuthContext } from "@/hooks/use-auth";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,13 +15,13 @@ import { useToast } from "@/hooks/use-toast";
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  // Use context but handle case when it might be null (during app initial loading)
   const authContext = useContext(AuthContext);
+  const user = authContext?.user ?? null;
+  const logoutMutation = authContext?.logoutMutation;
+  
   const { toast } = useToast();
   const [, setLocation] = useLocation();
-  
-  // Safe access to user and logoutMutation
-  const user = authContext?.user || null;
-  const logoutMutation = authContext?.logoutMutation;
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
