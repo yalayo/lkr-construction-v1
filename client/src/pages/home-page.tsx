@@ -7,7 +7,7 @@ const HomePage = () => {
   return (
     <div className="bg-neutral-50">
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-primary-600 to-primary-800 text-white py-20">
+      <section className="bg-gradient-to-r from-primary-600 to-primary-800 text-black py-20">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center">
             <div className="md:w-1/2 mb-10 md:mb-0">
@@ -20,7 +20,7 @@ const HomePage = () => {
                   </Button>
                 </Link>
                 <Link href="#contact">
-                  <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
+                  <Button size="lg" variant="outline" className="border-black text-black hover:bg-white/10">
                     <Phone className="mr-2 h-5 w-5" /> Contact Us
                   </Button>
                 </Link>
@@ -31,22 +31,22 @@ const HomePage = () => {
                 <div className="bg-white/10 p-6 rounded-lg backdrop-blur-sm">
                   <Zap className="h-10 w-10 mb-4 text-yellow-300" />
                   <h3 className="text-lg font-medium mb-1">Electrical Services</h3>
-                  <p className="text-sm text-white/80">Professional solutions for all your electrical needs</p>
+                  <p className="text-sm text-black">Professional solutions for all your electrical needs</p>
                 </div>
                 <div className="bg-white/10 p-6 rounded-lg backdrop-blur-sm">
                   <Droplet className="h-10 w-10 mb-4 text-blue-300" />
                   <h3 className="text-lg font-medium mb-1">Plumbing Services</h3>
-                  <p className="text-sm text-white/80">Expert repairs and installations by certified plumbers</p>
+                  <p className="text-sm text-black">Expert repairs and installations by certified plumbers</p>
                 </div>
                 <div className="bg-white/10 p-6 rounded-lg backdrop-blur-sm">
                   <Clock className="h-10 w-10 mb-4 text-green-300" />
                   <h3 className="text-lg font-medium mb-1">24/7 Emergency</h3>
-                  <p className="text-sm text-white/80">Fast response when you need it most</p>
+                  <p className="text-sm text-black">Fast response when you need it most</p>
                 </div>
                 <div className="bg-white/10 p-6 rounded-lg backdrop-blur-sm">
                   <Shield className="h-10 w-10 mb-4 text-purple-300" />
                   <h3 className="text-lg font-medium mb-1">Quality Guarantee</h3>
-                  <p className="text-sm text-white/80">All work backed by our satisfaction guarantee</p>
+                  <p className="text-sm text-black">All work backed by our satisfaction guarantee</p>
                 </div>
               </div>
             </div>
@@ -207,7 +207,7 @@ const HomePage = () => {
       </section>
       
       {/* Call to Action */}
-      <section className="py-16 bg-gradient-to-r from-primary-600 to-blue-600 text-white" id="contact">
+      <section className="py-16 bg-gradient-to-r from-primary-600 to-blue-600 text-black" id="contact">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
           <p className="text-xl mb-8 max-w-3xl mx-auto">
@@ -219,7 +219,7 @@ const HomePage = () => {
                 Request Service
               </Button>
             </Link>
-            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
+            <Button size="lg" variant="outline" className="border-black text-black hover:bg-white/10">
               <Phone className="mr-2 h-5 w-5" /> (337) 123-4567
             </Button>
           </div>

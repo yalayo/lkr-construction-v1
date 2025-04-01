@@ -46,7 +46,7 @@ const ServiceType = ({ formData, updateFormData }: ServiceTypeProps) => {
             </div>
             <div className="text-center">
               <h3 className="font-medium text-lg">Electrical</h3>
-              <p className="text-sm text-neutral-600 mt-1">
+              <p className="text-sm text-neutral-800 mt-1">
                 Wiring, circuits, outlets, lighting, and all electrical issues
               </p>
             </div>
@@ -72,7 +72,7 @@ const ServiceType = ({ formData, updateFormData }: ServiceTypeProps) => {
             </div>
             <div className="text-center">
               <h3 className="font-medium text-lg">Plumbing</h3>
-              <p className="text-sm text-neutral-600 mt-1">
+              <p className="text-sm text-neutral-800 mt-1">
                 Leaks, drains, fixtures, toilets, and all plumbing issues
               </p>
             </div>
@@ -103,7 +103,7 @@ const ServiceType = ({ formData, updateFormData }: ServiceTypeProps) => {
             </div>
             <div className="text-center">
               <h3 className="font-medium text-lg">Both Services</h3>
-              <p className="text-sm text-neutral-600 mt-1">
+              <p className="text-sm text-neutral-800 mt-1">
                 Need help with both electrical and plumbing issues
               </p>
             </div>
