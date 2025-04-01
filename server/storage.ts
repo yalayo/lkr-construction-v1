@@ -14,6 +14,7 @@ import { eq, and, sql, asc, gt, lt, gte, lte } from "drizzle-orm";
 import { db } from "./db";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db";
+import { getSafeAllServiceRequests, getSafeServiceRequestsByUserId, getSafeServiceRequest } from "./storage-fix";
 
 // Create session stores
 const MemoryStore = createMemoryStore(session);
@@ -191,146 +192,18 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getServiceRequest(id: number): Promise<ServiceRequest | undefined> {
-    // Explicitly select columns to prevent errors with mismatched database schemas
-    const [request] = await db.select({
-      id: serviceRequests.id,
-      userId: serviceRequests.userId,
-      serviceType: serviceRequests.serviceType,
-      issueType: serviceRequests.issueType,
-      urgency: serviceRequests.urgency,
-      propertyType: serviceRequests.propertyType,
-      description: serviceRequests.description,
-      previousIssue: serviceRequests.previousIssue,
-      name: serviceRequests.name,
-      phone: serviceRequests.phone,
-      email: serviceRequests.email,
-      address: serviceRequests.address,
-      preferredDate: serviceRequests.preferredDate,
-      preferredTime: serviceRequests.preferredTime,
-      status: serviceRequests.status,
-      technicianId: serviceRequests.technicianId,
-      technicianName: serviceRequests.technicianName,
-      cost: serviceRequests.cost,
-      notes: serviceRequests.notes,
-      completedDate: serviceRequests.completedDate,
-      quotedAmount: serviceRequests.quotedAmount,
-      quoteDate: serviceRequests.quoteDate,
-      quoteExpiryDate: serviceRequests.quoteExpiryDate,
-      quoteNotes: serviceRequests.quoteNotes,
-      quoteToken: serviceRequests.quoteToken,
-      quoteAcceptedDate: serviceRequests.quoteAcceptedDate,
-      priority: serviceRequests.priority,
-      quoteAccepted: serviceRequests.quoteAccepted,
-      scheduledDate: serviceRequests.scheduledDate,
-      createdAt: serviceRequests.createdAt,
-      updatedAt: serviceRequests.updatedAt,
-    })
-    .from(serviceRequests)
-    .where(eq(serviceRequests.id, id));
-    
-    if (!request) return undefined;
-    
-    // Add missing fields with null values
-    return {
-      ...request,
-      completionNotes: null,
-      materialUsed: null,
-      completionDate: request.completedDate, // Use completedDate for completionDate
-    } as ServiceRequest;
+    // Use the safe implementation to avoid errors with missing columns
+    return getSafeServiceRequest(db, id);
   }
   
   async getServiceRequestsByUserId(userId: number): Promise<ServiceRequest[]> {
-    // Explicitly select columns to prevent errors with mismatched database schemas
-    const dbResults = await db.select({
-      id: serviceRequests.id,
-      userId: serviceRequests.userId,
-      serviceType: serviceRequests.serviceType,
-      issueType: serviceRequests.issueType,
-      urgency: serviceRequests.urgency,
-      propertyType: serviceRequests.propertyType,
-      description: serviceRequests.description,
-      previousIssue: serviceRequests.previousIssue,
-      name: serviceRequests.name,
-      phone: serviceRequests.phone,
-      email: serviceRequests.email,
-      address: serviceRequests.address,
-      preferredDate: serviceRequests.preferredDate,
-      preferredTime: serviceRequests.preferredTime,
-      status: serviceRequests.status,
-      technicianId: serviceRequests.technicianId,
-      technicianName: serviceRequests.technicianName,
-      cost: serviceRequests.cost,
-      notes: serviceRequests.notes,
-      completedDate: serviceRequests.completedDate,
-      quotedAmount: serviceRequests.quotedAmount,
-      quoteDate: serviceRequests.quoteDate,
-      quoteExpiryDate: serviceRequests.quoteExpiryDate,
-      quoteNotes: serviceRequests.quoteNotes,
-      quoteToken: serviceRequests.quoteToken,
-      quoteAcceptedDate: serviceRequests.quoteAcceptedDate,
-      priority: serviceRequests.priority,
-      quoteAccepted: serviceRequests.quoteAccepted,
-      scheduledDate: serviceRequests.scheduledDate,
-      createdAt: serviceRequests.createdAt,
-      updatedAt: serviceRequests.updatedAt,
-    })
-    .from(serviceRequests)
-    .where(eq(serviceRequests.userId, userId));
-
-    // For each result, add missing fields with null values
-    return dbResults.map(request => ({
-      ...request,
-      // Add missing fields
-      completionNotes: null,
-      materialUsed: null,
-      completionDate: request.completedDate, // Use completedDate for completionDate
-    } as ServiceRequest));
+    // Use the safe implementation to avoid errors with missing columns
+    return getSafeServiceRequestsByUserId(db, userId);
   }
   
   async getAllServiceRequests(): Promise<ServiceRequest[]> {
-    // Explicitly select columns to prevent errors with mismatched database schemas
-    const dbResults = await db.select({
-      id: serviceRequests.id,
-      userId: serviceRequests.userId,
-      serviceType: serviceRequests.serviceType,
-      issueType: serviceRequests.issueType,
-      urgency: serviceRequests.urgency,
-      propertyType: serviceRequests.propertyType,
-      description: serviceRequests.description,
-      previousIssue: serviceRequests.previousIssue,
-      name: serviceRequests.name,
-      phone: serviceRequests.phone,
-      email: serviceRequests.email,
-      address: serviceRequests.address,
-      preferredDate: serviceRequests.preferredDate,
-      preferredTime: serviceRequests.preferredTime,
-      status: serviceRequests.status,
-      technicianId: serviceRequests.technicianId,
-      technicianName: serviceRequests.technicianName,
-      cost: serviceRequests.cost,
-      notes: serviceRequests.notes,
-      completedDate: serviceRequests.completedDate,
-      quotedAmount: serviceRequests.quotedAmount,
-      quoteDate: serviceRequests.quoteDate,
-      quoteExpiryDate: serviceRequests.quoteExpiryDate,
-      quoteNotes: serviceRequests.quoteNotes,
-      quoteToken: serviceRequests.quoteToken,
-      quoteAcceptedDate: serviceRequests.quoteAcceptedDate,
-      priority: serviceRequests.priority,
-      quoteAccepted: serviceRequests.quoteAccepted,
-      scheduledDate: serviceRequests.scheduledDate,
-      createdAt: serviceRequests.createdAt,
-      updatedAt: serviceRequests.updatedAt,
-    }).from(serviceRequests);
-
-    // For each result, add missing fields with null values
-    return dbResults.map(request => ({
-      ...request,
-      // Add missing fields
-      completionNotes: null,
-      materialUsed: null,
-      completionDate: request.completedDate, // Use completedDate for completionDate
-    } as ServiceRequest));
+    // Use the safe implementation to avoid errors with missing columns
+    return getSafeAllServiceRequests(db);
   }
   
   async updateServiceRequest(id: number, data: Partial<ServiceRequest>): Promise<ServiceRequest | undefined> {
