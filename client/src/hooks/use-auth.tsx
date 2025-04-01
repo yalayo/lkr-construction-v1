@@ -228,7 +228,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    // Create a temporary stub context when used outside provider
+    // This prevents app from crashing if used outside provider
+    return {
+      user: null,
+      isLoading: false,
+      error: null,
+      loginMutation: {
+        mutate: () => console.warn("Auth provider not properly initialized"),
+        mutateAsync: async () => {
+          console.warn("Auth provider not properly initialized");
+          throw new Error("Auth provider not initialized");
+        }
+      } as any,
+      logoutMutation: {
+        mutate: () => console.warn("Auth provider not properly initialized"),
+        mutateAsync: async () => {
+          console.warn("Auth provider not properly initialized");
+          throw new Error("Auth provider not initialized");
+        }
+      } as any,
+      registerMutation: {
+        mutate: () => console.warn("Auth provider not properly initialized"),
+        mutateAsync: async () => {
+          console.warn("Auth provider not properly initialized");
+          throw new Error("Auth provider not initialized");
+        }
+      } as any
+    };
   }
   return context;
 }

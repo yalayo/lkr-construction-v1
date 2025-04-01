@@ -11,8 +11,11 @@ import AccountSettings from "@/pages/account-settings";
 import { ProtectedRoute } from "./lib/protected-route";
 import Navbar from "./components/layout/navbar";
 import Footer from "./components/layout/footer";
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
+import { OnboardingWizard } from "./components/onboarding/onboarding-wizard";
+import { useAuth } from "./hooks/use-auth";
+import { useOnboarding } from "./contexts/onboarding-context";
 
 // Fix Account Settings component wrapper for protected route
 const AccountSettingsWrapper = () => <AccountSettings />;
@@ -35,6 +38,30 @@ function Router() {
   );
 }
 
+// Simple onboarding component to show the wizard
+function OnboardingIntegration() {
+  const { user } = useAuth();
+  const { isOpen, openOnboarding, closeOnboarding } = useOnboarding();
+  
+  useEffect(() => {
+    if (!user) return;
+    
+    // Store user ID for the onboarding context to use
+    localStorage.setItem('currentUserId', String(user.id));
+    
+    // Check if the user has seen the onboarding
+    const hasSeenOnboarding = localStorage.getItem(`onboarding-completed-${user.id}`);
+    
+    if (hasSeenOnboarding !== 'true') {
+      openOnboarding();
+    }
+  }, [user, openOnboarding]);
+  
+  return isOpen && user ? (
+    <OnboardingWizard isOpen={true} onClose={closeOnboarding} />
+  ) : null;
+}
+
 function App() {
   return (
     <div className="flex flex-col min-h-screen">
@@ -43,6 +70,7 @@ function App() {
         <Router />
       </main>
       <Footer />
+      <OnboardingIntegration />
       <Toaster />
     </div>
   );

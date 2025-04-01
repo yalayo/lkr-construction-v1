@@ -4,11 +4,14 @@ import App from "./App";
 import "./index.css";
 import { AuthProvider } from "./hooks/use-auth";
 import { queryClient } from "./lib/queryClient";
+import { OnboardingProvider } from "./contexts/onboarding-context";
 
 createRoot(document.getElementById("root")!).render(
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <App />
+      <OnboardingProvider>
+        <App />
+      </OnboardingProvider>
     </AuthProvider>
   </QueryClientProvider>
 );

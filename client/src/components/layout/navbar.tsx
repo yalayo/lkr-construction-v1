@@ -1,8 +1,9 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Zap, Droplet, Menu, X, User, LogOut, Settings } from "lucide-react";
+import { Zap, Droplet, Menu, X, User, LogOut, Settings, HelpCircle } from "lucide-react";
 import { useState, useContext } from "react";
 import { AuthContext } from "@/hooks/use-auth";
+import { useOnboarding } from "@/contexts/onboarding-context";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +20,9 @@ const Navbar = () => {
   const authContext = useContext(AuthContext);
   const user = authContext?.user ?? null;
   const logoutMutation = authContext?.logoutMutation;
+  
+  // Access onboarding context
+  const { openOnboarding } = useOnboarding();
   
   const { toast } = useToast();
   const [, setLocation] = useLocation();
@@ -104,6 +108,15 @@ const Navbar = () => {
           <div className="flex items-center">
             {user ? (
               <>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={openOnboarding}
+                  className="mr-2"
+                  title="Help & Onboarding"
+                >
+                  <HelpCircle className="h-5 w-5" />
+                </Button>
                 <Link href={getDashboardLink()}>
                   <Button variant="outline" className="mr-2 hidden md:inline-flex">Dashboard</Button>
                 </Link>
@@ -132,6 +145,10 @@ const Navbar = () => {
                     <DropdownMenuItem onClick={() => setLocation("/account-settings")}>
                       <Settings className="mr-2 h-4 w-4" />
                       <span>Account Settings</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={openOnboarding}>
+                      <HelpCircle className="mr-2 h-4 w-4" />
+                      <span>Help & Onboarding</span>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout}>
@@ -200,6 +217,15 @@ const Navbar = () => {
                       Account Settings
                     </span>
                   </Link>
+                  <div 
+                    className="block px-3 py-2 rounded-md text-base font-medium text-neutral-700 hover:bg-neutral-50 cursor-pointer"
+                    onClick={openOnboarding}
+                  >
+                    <span className="flex items-center">
+                      <HelpCircle className="mr-2 h-4 w-4" />
+                      Help & Onboarding
+                    </span>
+                  </div>
                   <div 
                     className="block px-3 py-2 rounded-md text-base font-medium text-neutral-700 hover:bg-neutral-50 cursor-pointer"
                     onClick={handleLogout}
