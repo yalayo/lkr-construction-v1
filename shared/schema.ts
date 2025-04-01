@@ -31,12 +31,18 @@ export const serviceRequests = pgTable("service_requests", {
   address: text("address").notNull(),
   preferredDate: text("preferred_date"),
   preferredTime: text("preferred_time"), // morning, afternoon, evening, anytime
-  status: text("status").notNull().default("new"), // new, assigned, scheduled, completed, cancelled
+  status: text("status").notNull().default("new"), // new, quoted, accepted, in_progress, completed, cancelled
   technicianId: integer("technician_id").references(() => users.id),
   technicianName: text("technician_name"),
   cost: decimal("cost", { precision: 10, scale: 2 }),
   notes: text("notes"),
   completedDate: timestamp("completed_date"),
+  quotedAmount: decimal("quoted_amount", { precision: 10, scale: 2 }),
+  quoteDate: timestamp("quote_date"),
+  quoteExpiryDate: timestamp("quote_expiry_date"),
+  quoteNotes: text("quote_notes"),
+  quoteToken: text("quote_token"),  
+  quoteAcceptedDate: timestamp("quote_accepted_date"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -120,6 +126,12 @@ export const insertServiceRequestSchema = createInsertSchema(serviceRequests).om
   cost: true,
   notes: true,
   completedDate: true,
+  quotedAmount: true,
+  quoteDate: true,
+  quoteExpiryDate: true,
+  quoteNotes: true,
+  quoteToken: true,
+  quoteAcceptedDate: true,
   createdAt: true,
   updatedAt: true,
 });
@@ -156,3 +168,13 @@ export type InsertAppointment = z.infer<typeof insertAppointmentSchema>;
 
 export type Transaction = typeof transactions.$inferSelect;
 export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
+
+// Quote submission schema
+export const quoteSubmissionSchema = z.object({
+  serviceRequestId: z.number(),
+  amount: z.number().positive(),
+  notes: z.string().optional(),
+  expiryDays: z.number().int().positive().default(7)
+});
+
+export type QuoteSubmission = z.infer<typeof quoteSubmissionSchema>;

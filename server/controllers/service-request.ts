@@ -1,7 +1,12 @@
 import { Express } from "express";
 import { storage } from "../storage";
 import { sendSMS } from "../utils/twilio";
-import { insertServiceRequestSchema, InsertServiceRequest } from "@shared/schema";
+import { 
+  insertServiceRequestSchema, 
+  InsertServiceRequest,
+  quoteSubmissionSchema
+} from "@shared/schema";
+import { generateQuoteToken, sendQuoteSMS, getClientUrl } from "../utils/quote";
 import { z } from "zod";
 
 export function setupServiceRequestRoutes(app: Express) {
@@ -109,6 +114,197 @@ export function setupServiceRequestRoutes(app: Express) {
       });
       
       res.json(leads);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // Submit a quote for a service request
+  app.post("/api/service-requests/:id/quote", async (req, res, next) => {
+    try {
+      // Only owners and admins can submit quotes
+      if (!req.isAuthenticated() || (req.user.role !== "owner" && req.user.role !== "admin")) {
+        return res.status(403).send("Unauthorized");
+      }
+      
+      const serviceRequestId = parseInt(req.params.id);
+      if (isNaN(serviceRequestId)) {
+        return res.status(400).send("Invalid service request ID");
+      }
+      
+      // Validate the quote submission data
+      const quoteData = quoteSubmissionSchema.parse(req.body);
+      
+      // Get the service request
+      const serviceRequest = await storage.getServiceRequest(serviceRequestId);
+      if (!serviceRequest) {
+        return res.status(404).send("Service request not found");
+      }
+      
+      // Generate a unique token for this quote
+      const quoteToken = generateQuoteToken();
+      
+      // Calculate the expiry date
+      const now = new Date();
+      const expiryDate = new Date(now);
+      expiryDate.setDate(expiryDate.getDate() + quoteData.expiryDays);
+      
+      // Update the service request with quote information
+      const updatedServiceRequest = await storage.updateServiceRequest(serviceRequestId, {
+        status: "quoted",
+        quotedAmount: quoteData.amount.toString(),
+        quoteDate: now,
+        quoteExpiryDate: expiryDate,
+        quoteNotes: quoteData.notes || null,
+        quoteToken: quoteToken
+      });
+      
+      // Send SMS notification with quote details and confirmation link
+      if (updatedServiceRequest) {
+        await sendQuoteSMS(updatedServiceRequest, getClientUrl());
+        
+        res.json({
+          success: true,
+          serviceRequest: updatedServiceRequest
+        });
+      } else {
+        res.status(500).send("Failed to update service request");
+      }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ errors: error.errors });
+      }
+      next(error);
+    }
+  });
+  
+  // Get a service request by ID (public endpoint for quote confirmation)
+  app.get("/api/service-requests/public/:id", async (req, res, next) => {
+    try {
+      const serviceRequestId = parseInt(req.params.id);
+      if (isNaN(serviceRequestId)) {
+        return res.status(400).send("Invalid service request ID");
+      }
+      
+      const serviceRequest = await storage.getServiceRequest(serviceRequestId);
+      if (!serviceRequest) {
+        return res.status(404).send("Service request not found");
+      }
+      
+      // Return limited information for public access
+      // Only return the essential fields needed for confirmation
+      const publicServiceRequest = {
+        id: serviceRequest.id,
+        name: serviceRequest.name,
+        serviceType: serviceRequest.serviceType,
+        issueType: serviceRequest.issueType,
+        status: serviceRequest.status,
+        quotedAmount: serviceRequest.quotedAmount,
+        quoteDate: serviceRequest.quoteDate,
+        quoteAcceptedDate: serviceRequest.quoteAcceptedDate
+      };
+      
+      res.json(publicServiceRequest);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  // Confirm a quote by token
+  app.get("/api/quote/confirm/:token", async (req, res, next) => {
+    try {
+      const token = req.params.token;
+      
+      // Find the service request with this quote token
+      const serviceRequests = await storage.getAllServiceRequests();
+      const serviceRequest = serviceRequests.find(sr => sr.quoteToken === token);
+      
+      if (!serviceRequest) {
+        return res.status(404).send("Quote not found");
+      }
+      
+      // Check if the quote has expired
+      if (serviceRequest.quoteExpiryDate && new Date(serviceRequest.quoteExpiryDate) < new Date()) {
+        return res.status(400).send("Quote has expired");
+      }
+      
+      // Update the service request status to accepted
+      const now = new Date();
+      const updatedServiceRequest = await storage.updateServiceRequest(serviceRequest.id, {
+        status: "accepted",
+        quoteAcceptedDate: now
+      });
+      
+      // Send confirmation SMS to the customer
+      if (updatedServiceRequest) {
+        const message = `Thank you for accepting our quote for ${updatedServiceRequest.serviceType} service. We'll be in touch shortly to schedule your appointment.`;
+        await sendSMS(updatedServiceRequest.phone, message);
+        
+        // Redirect to a confirmation page
+        res.redirect(`${getClientUrl()}/quote-accepted?id=${serviceRequest.id}`);
+      } else {
+        res.status(500).send("Failed to update service request");
+      }
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  // Mark a service request as completed and record the revenue
+  app.post("/api/service-requests/:id/complete", async (req, res, next) => {
+    try {
+      // Only owners, admins, and technicians can mark a service as complete
+      if (!req.isAuthenticated() || 
+          (req.user.role !== "owner" && req.user.role !== "admin" && req.user.role !== "technician")) {
+        return res.status(403).send("Unauthorized");
+      }
+      
+      const serviceRequestId = parseInt(req.params.id);
+      if (isNaN(serviceRequestId)) {
+        return res.status(400).send("Invalid service request ID");
+      }
+      
+      // Get the service request
+      const serviceRequest = await storage.getServiceRequest(serviceRequestId);
+      if (!serviceRequest) {
+        return res.status(404).send("Service request not found");
+      }
+      
+      // Ensure the service request has an accepted quote
+      if (serviceRequest.status !== "accepted" && serviceRequest.status !== "in_progress") {
+        return res.status(400).send("Service request is not in an accepted or in-progress state");
+      }
+      
+      // Update service request to completed
+      const now = new Date();
+      const updatedServiceRequest = await storage.updateServiceRequest(serviceRequestId, {
+        status: "completed",
+        completedDate: now
+      });
+      
+      // Record the revenue in a transaction
+      if (updatedServiceRequest && updatedServiceRequest.quotedAmount) {
+        const transaction = await storage.createTransaction({
+          type: "income",
+          serviceRequestId: serviceRequest.id,
+          description: `Payment for ${serviceRequest.serviceType} service: ${serviceRequest.issueType}`,
+          amount: updatedServiceRequest.quotedAmount.toString(),
+          date: now.toISOString().split('T')[0],
+          category: serviceRequest.serviceType === "both" ? "both" : serviceRequest.serviceType
+        });
+        
+        // Send thank you SMS
+        const message = `Thank you for choosing LKR Construction! Your ${serviceRequest.serviceType} service has been completed. We appreciate your business.`;
+        await sendSMS(serviceRequest.phone, message);
+        
+        res.json({
+          success: true,
+          serviceRequest: updatedServiceRequest,
+          transaction
+        });
+      } else {
+        res.status(500).send("Failed to update service request or record transaction");
+      }
     } catch (error) {
       next(error);
     }
@@ -236,8 +432,4 @@ function calculatePriority(request: InsertServiceRequest, price: number): number
   return priority;
 }
 
-// Helper function to get client URL
-function getClientUrl(): string {
-  const domains = process.env.REPLIT_DOMAINS?.split(",")[0] || "http://localhost:5000";
-  return domains;
-}
+// We now use the getClientUrl function from utils/quote.ts

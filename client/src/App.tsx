@@ -7,6 +7,7 @@ import ClientDashboard from "@/pages/client-dashboard";
 import OwnerDashboard from "@/pages/owner-dashboard";
 import AdminDashboard from "@/pages/admin-dashboard";
 import AccountSettings from "@/pages/account-settings";
+import QuoteAccepted from "@/pages/quote-accepted";
 import { ProtectedRoute } from "./lib/protected-route";
 import Navbar from "./components/layout/navbar";
 import Footer from "./components/layout/footer";
@@ -89,6 +90,7 @@ function App() {
         <Switch>
           <Route path="/" component={HomePage} />
           <Route path="/auth" component={AuthPageWithRedirect} />
+          <Route path="/quote-accepted" component={QuoteAccepted} />
           <ProtectedRoute path="/client-dashboard" component={ClientDashboardWrapper} />
           <ProtectedRoute path="/owner-dashboard" component={OwnerDashboardWrapper} />
           <ProtectedRoute path="/admin-dashboard" component={AdminDashboardWrapper} />
