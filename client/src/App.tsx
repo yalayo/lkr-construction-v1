@@ -7,6 +7,7 @@ import RequestService from "@/pages/request-service";
 import ClientDashboard from "@/pages/client-dashboard";
 import OwnerDashboard from "@/pages/owner-dashboard";
 import AdminDashboard from "@/pages/admin-dashboard";
+import AccountSettings from "@/pages/account-settings";
 import { ProtectedRoute } from "./lib/protected-route";
 import Navbar from "./components/layout/navbar";
 import Footer from "./components/layout/footer";
@@ -20,6 +21,7 @@ function Router() {
       <ProtectedRoute path="/client-dashboard" component={ClientDashboard} />
       <ProtectedRoute path="/owner-dashboard" component={OwnerDashboard} />
       <ProtectedRoute path="/admin-dashboard" component={AdminDashboard} />
+      <ProtectedRoute path="/account-settings" component={AccountSettings} />
       <Route component={NotFound} />
     </Switch>
   );

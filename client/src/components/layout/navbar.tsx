@@ -1,13 +1,74 @@
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Zap, Droplet, Menu, X } from "lucide-react";
-import { useState } from "react";
+import { Zap, Droplet, Menu, X, User, LogOut, Settings } from "lucide-react";
+import { useState, useContext } from "react";
+import { AuthContext, useAuth } from "@/hooks/use-auth";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useToast } from "@/hooks/use-toast";
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const authContext = useContext(AuthContext);
+  const { toast } = useToast();
+  const [, setLocation] = useLocation();
+  
+  // Safe access to user and logoutMutation
+  const user = authContext?.user || null;
+  const logoutMutation = authContext?.logoutMutation;
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  const handleLogout = async () => {
+    try {
+      if (logoutMutation && typeof logoutMutation.mutateAsync === 'function') {
+        await logoutMutation.mutateAsync();
+        toast({
+          title: "Logged out",
+          description: "You have been successfully logged out.",
+        });
+      }
+      // In all cases, redirect to home
+      setLocation("/");
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to log out. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const getDashboardLink = () => {
+    if (!user) return "/auth";
+    
+    switch (user.role) {
+      case "admin":
+        return "/admin-dashboard";
+      case "owner":
+        return "/owner-dashboard";
+      case "technician":
+        return "/technician-dashboard";
+      default:
+        return "/client-dashboard";
+    }
+  };
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(part => part[0])
+      .join('')
+      .toUpperCase()
+      .substring(0, 2);
   };
 
   return (
@@ -41,12 +102,55 @@ const Navbar = () => {
           </div>
           
           <div className="flex items-center">
-            <Link href="/auth">
-              <Button variant="outline" className="mr-2">Log in</Button>
-            </Link>
-            <Link href="/request-service">
-              <Button>Get Started</Button>
-            </Link>
+            {user ? (
+              <>
+                <Link href={getDashboardLink()}>
+                  <Button variant="outline" className="mr-2 hidden md:inline-flex">Dashboard</Button>
+                </Link>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="p-1">
+                      <Avatar className="h-8 w-8">
+                        <AvatarFallback className="bg-primary text-primary-foreground">
+                          {getInitials(user.name)}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <div className="px-2 py-1.5 text-sm font-medium text-muted-foreground">
+                      {user.name}
+                    </div>
+                    <div className="px-2 pb-1.5 text-xs text-muted-foreground">
+                      {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                    </div>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => setLocation(getDashboardLink())}>
+                      <User className="mr-2 h-4 w-4" />
+                      <span>Dashboard</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setLocation("/account-settings")}>
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Account Settings</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleLogout}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Log out</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            ) : (
+              <>
+                <Link href="/auth">
+                  <Button variant="outline" className="mr-2">Log in</Button>
+                </Link>
+                <Link href="/request-service">
+                  <Button>Get Started</Button>
+                </Link>
+              </>
+            )}
             
             <div className="ml-4 md:hidden">
               <Button
@@ -84,6 +188,26 @@ const Navbar = () => {
                   Contact
                 </span>
               </Link>
+              {user && (
+                <>
+                  <Link href={getDashboardLink()}>
+                    <span className="block px-3 py-2 rounded-md text-base font-medium text-neutral-700 hover:bg-neutral-50">
+                      Dashboard
+                    </span>
+                  </Link>
+                  <Link href="/account-settings">
+                    <span className="block px-3 py-2 rounded-md text-base font-medium text-neutral-700 hover:bg-neutral-50">
+                      Account Settings
+                    </span>
+                  </Link>
+                  <div 
+                    className="block px-3 py-2 rounded-md text-base font-medium text-neutral-700 hover:bg-neutral-50 cursor-pointer"
+                    onClick={handleLogout}
+                  >
+                    Log out
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}

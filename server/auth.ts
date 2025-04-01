@@ -127,4 +127,74 @@ export function setupAuth(app: Express) {
     const { password, ...userWithoutPassword } = req.user;
     res.json(userWithoutPassword);
   });
+
+  // Change password route (requires authentication)
+  app.post("/api/change-password", async (req, res, next) => {
+    try {
+      if (!req.isAuthenticated()) return res.status(401).send("Not authenticated");
+      
+      const { currentPassword, newPassword } = req.body;
+      
+      if (!currentPassword || !newPassword) {
+        return res.status(400).send("Current password and new password are required");
+      }
+      
+      const user = await storage.getUser(req.user.id);
+      
+      if (!user) {
+        return res.status(404).send("User not found");
+      }
+      
+      // Verify current password
+      const isCurrentPasswordValid = await comparePasswords(currentPassword, user.password);
+      
+      if (!isCurrentPasswordValid) {
+        return res.status(400).send("Current password is incorrect");
+      }
+      
+      // Hash the new password
+      const hashedNewPassword = await hashPassword(newPassword);
+      
+      // Update the user's password
+      await storage.updateUser(user.id, { password: hashedNewPassword });
+      
+      res.status(200).send("Password changed successfully");
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  // Reset user password (admin only)
+  app.post("/api/reset-password", async (req, res, next) => {
+    try {
+      if (!req.isAuthenticated()) return res.status(401).send("Not authenticated");
+      
+      // Only admin users can reset passwords
+      if (req.user.role !== 'admin') {
+        return res.status(403).send("Only administrators can reset passwords");
+      }
+      
+      const { userId, newPassword } = req.body;
+      
+      if (!userId || !newPassword) {
+        return res.status(400).send("User ID and new password are required");
+      }
+      
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).send("User not found");
+      }
+      
+      // Hash the new password
+      const hashedNewPassword = await hashPassword(newPassword);
+      
+      // Update the user's password
+      await storage.updateUser(user.id, { password: hashedNewPassword });
+      
+      res.status(200).send("Password reset successfully");
+    } catch (error) {
+      next(error);
+    }
+  });
 }
