@@ -273,7 +273,7 @@ const OwnerDashboard = () => {
       
       {/* Stats Overview */}
       <div className="mb-8">
-        <StatsOverview stats={dashboardData?.stats} />
+        {dashboardData?.stats && <StatsOverview stats={dashboardData.stats} />}
       </div>
       
       {/* Tabs for different sections */}
@@ -329,15 +329,17 @@ const OwnerDashboard = () => {
         </TabsContent>
         
         <TabsContent value="leads">
-          <LeadManagement leads={dashboardData?.leads || []} />
+          {dashboardData?.leads && <LeadManagement leads={dashboardData.leads as any[]} />}
         </TabsContent>
         
         <TabsContent value="financials">
-          <FinancialOverview 
-            financials={dashboardData?.financials} 
-            period={filterPeriod}
-            setPeriod={setFilterPeriod}
-          />
+          {dashboardData?.financials && (
+            <FinancialOverview 
+              financials={dashboardData.financials as any} 
+              period={filterPeriod}
+              setPeriod={setFilterPeriod}
+            />
+          )}
         </TabsContent>
       </Tabs>
     </div>

@@ -105,14 +105,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       
       console.log("Redirecting based on role:", userData.role);
-      // Use direct window navigation instead of React Router
+      
+      // First update React routing state
       if (userData.role === "client") {
-        window.location.href = "/client-dashboard";
+        setLocation("/client-dashboard");
       } else if (userData.role === "owner") {
-        window.location.href = "/owner-dashboard";
+        setLocation("/owner-dashboard");
       } else if (userData.role === "admin") {
-        window.location.href = "/admin-dashboard";
+        setLocation("/admin-dashboard");
       }
+      
+      // As a fallback, use direct window navigation to ensure redirect happens
+      setTimeout(() => {
+        if (userData.role === "client") {
+          window.location.href = "/client-dashboard";
+        } else if (userData.role === "owner") {
+          window.location.href = "/owner-dashboard";
+        } else if (userData.role === "admin") {
+          window.location.href = "/admin-dashboard";
+        }
+      }, 100);
     },
     onError: (error: Error) => {
       console.error("Login mutation error handler:", error);
@@ -157,8 +169,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         description: `Welcome, ${userData.name}!`,
       });
       
-      // Use direct window navigation for new users
-      window.location.href = "/client-dashboard";
+      // First update React routing state
+      setLocation("/client-dashboard");
+      
+      // As a fallback, use direct window navigation 
+      setTimeout(() => {
+        window.location.href = "/client-dashboard";
+      }, 100);
     },
     onError: (error: Error) => {
       console.error("Registration mutation error handler:", error);
@@ -196,8 +213,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: "Logged out successfully",
       });
       
-      // Use direct window navigation
-      window.location.href = "/";
+      // First update React routing state
+      setLocation("/");
+      
+      // As a fallback, use direct window navigation
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 100);
     },
     onError: (error: Error) => {
       console.error("Logout mutation error handler:", error);

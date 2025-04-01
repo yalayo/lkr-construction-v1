@@ -111,19 +111,30 @@ const AuthPage = () => {
       // Force a hard redirect to the appropriate dashboard
       console.log("Redirecting based on role:", userData.role);
       
-      // Directly redirecting with window.location instead of using wouter
+      // Use wouter for navigation
       if (userData.role === "client") {
         console.log("Redirecting to client dashboard");
-        window.location.href = "/client-dashboard";
+        navigate("/client-dashboard");
       } else if (userData.role === "owner") {
         console.log("Redirecting to owner dashboard");
-        window.location.href = "/owner-dashboard";
+        navigate("/owner-dashboard");
       } else if (userData.role === "admin") {
         console.log("Redirecting to admin dashboard");
-        window.location.href = "/admin-dashboard";
+        navigate("/admin-dashboard");
       } else {
         console.error("Unknown role:", userData.role);
       }
+      
+      // As a fallback, use direct window navigation after a short delay
+      setTimeout(() => {
+        if (userData.role === "client") {
+          window.location.href = "/client-dashboard";
+        } else if (userData.role === "owner") {
+          window.location.href = "/owner-dashboard";
+        } else if (userData.role === "admin") {
+          window.location.href = "/admin-dashboard";
+        }
+      }, 100);
     } catch (error) {
       console.error("Login error:", error);
     } finally {
@@ -167,8 +178,13 @@ const AuthPage = () => {
       const userData = await response.json();
       console.log("Registration successful, user data:", userData);
       
-      // Force a hard redirect to the client dashboard for new users
-      window.location.href = "/client-dashboard";
+      // Use wouter for navigation first
+      navigate("/client-dashboard");
+      
+      // As a fallback, use direct window navigation after a short delay
+      setTimeout(() => {
+        window.location.href = "/client-dashboard";
+      }, 100);
     } catch (error) {
       console.error("Registration error:", error);
     } finally {

@@ -70,6 +70,20 @@ export function setupServiceRequestRoutes(app: Express) {
     }
   });
   
+  // Get all service requests (for owner and admin dashboard)
+  app.get("/api/service-requests", async (req, res, next) => {
+    try {
+      if (!req.isAuthenticated() || (req.user.role !== "owner" && req.user.role !== "admin")) {
+        return res.status(403).send("Unauthorized");
+      }
+      
+      const serviceRequests = await storage.getAllServiceRequests();
+      res.json(serviceRequests);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
   // Get all leads (for owner dashboard)
   app.get("/api/leads", async (req, res, next) => {
     try {
