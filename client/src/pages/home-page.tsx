@@ -170,8 +170,18 @@ const HomePage = () => {
           
           {/* Progress Steps */}
           <div className="relative flex justify-between mb-8 px-4 sm:px-8">
-            {/* Horizontal Line */}
-            <div className="absolute top-4 left-0 right-0 h-[2px] bg-gray-400" style={{ zIndex: 0 }}></div>
+            {/* Horizontal Line - Background (light gray) */}
+            <div className="absolute top-4 left-[10%] right-[10%] h-[2px] bg-gray-300" style={{ zIndex: 0 }}></div>
+            
+            {/* Horizontal Line - Progress (dark) */}
+            <div 
+              className="absolute top-4 h-[2px] bg-black transition-all duration-300" 
+              style={{ 
+                zIndex: 0,
+                left: '10%',
+                width: `${(currentStep - 1) * (80 / (steps.length - 1))}%`,
+              }}
+            ></div>
             
             {/* Steps */}
             {steps.map((step) => (
@@ -186,10 +196,14 @@ const HomePage = () => {
                       ? "bg-black border-black text-white" 
                       : step.id === currentStep 
                         ? "border-black text-black" 
-                        : "border-gray-700 text-black"
+                        : "border-gray-400 text-black"
                   }`}
                 >
-                  {step.id < currentStep ? <Check className="h-5 w-5" /> : step.id}
+                  {step.id < currentStep ? (
+                    <Check className="h-5 w-5 text-white" />
+                  ) : (
+                    <span className={step.id === currentStep ? "font-bold" : ""}>{step.id}</span>
+                  )}
                 </div>
                 <span 
                   className={`text-sm ${
