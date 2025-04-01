@@ -468,7 +468,8 @@ const OwnerDashboard = () => {
   // Fetch stats, leads, and financials data
   const {
     data: dashboardData,
-    isLoading: isLoadingDashboard
+    isLoading: isLoadingDashboard,
+    error: dashboardError
   } = useQuery({
     queryKey: ['/api/dashboard', filterPeriod],
     queryFn: async () => {
@@ -483,6 +484,7 @@ const OwnerDashboard = () => {
             financials: null
           };
         }
+        console.log('User authenticated as:', user.username, 'with role:', user.role);
         console.log('Dashboard fetch as:', user.username, 'with role:', user.role);
         
         // Call the dashboard API endpoint 
@@ -534,16 +536,18 @@ const OwnerDashboard = () => {
     );
   }
 
-  // Show error state if there was an error fetching service requests
-  if (requestsError) {
+  // Show error state if there was an error fetching service requests or dashboard data
+  if (requestsError || dashboardError) {
+    const error = requestsError || dashboardError;
+    console.error('Dashboard error:', error);
     return (
       <div className="flex flex-col items-center justify-center min-h-[500px] gap-4">
         <AlertCircle className="h-12 w-12 text-red-500" />
         <h2 className="text-xl font-semibold text-red-500">Error Loading Dashboard</h2>
         <p className="text-gray-600">
-          {requestsError instanceof Error 
-            ? requestsError.message 
-            : 'There was an error loading service requests. Please try again.'}
+          {error instanceof Error 
+            ? error.message 
+            : 'There was an error loading the dashboard. Please try again.'}
         </p>
         <Button 
           onClick={() => window.location.reload()}

@@ -8,6 +8,17 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 
+// Helper function to safely format price values
+function formatPrice(price: unknown): string {
+  try {
+    const numPrice = Number(price);
+    return isNaN(numPrice) ? '0.00' : numPrice.toFixed(2);
+  } catch (e) {
+    console.error('Error formatting price:', e);
+    return '0.00';
+  }
+}
+
 interface LeadManagementProps {
   leads: Lead[];
 }
@@ -19,6 +30,9 @@ const LeadManagement = ({ leads }: LeadManagementProps) => {
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  
+  console.log('LeadManagement - Received leads:', leads?.length || 0);
+  console.log('LeadManagement - First lead:', leads && leads.length > 0 ? leads[0] : 'No leads');
   
   const itemsPerPage = 5;
   
@@ -133,7 +147,7 @@ const LeadManagement = ({ leads }: LeadManagementProps) => {
                   {new Date(lead.createdAt).toLocaleDateString()}
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-neutral-700">
-                  ${lead.estimatedPrice.toFixed(2)}
+                  ${formatPrice(lead.estimatedPrice)}
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap">
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${

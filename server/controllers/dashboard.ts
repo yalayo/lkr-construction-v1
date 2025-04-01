@@ -5,12 +5,15 @@ export function setupDashboardRoutes(app: Express) {
   // Get dashboard data for owners/admins
   app.get("/api/dashboard", async (req, res, next) => {
     try {
+      console.log('Dashboard API request received');
       if (!req.isAuthenticated() || (req.user.role !== "owner" && req.user.role !== "admin")) {
+        console.log('Dashboard API - Authentication failed', req.isAuthenticated(), req.user?.role);
         return res.status(403).send("Unauthorized");
       }
       
       // Get the period from query params (default to "month")
       const period = (req.query.period as string) || "month";
+      console.log('Dashboard API - Period:', period);
       
       // Calculate date range based on period
       const now = new Date();
@@ -33,11 +36,19 @@ export function setupDashboardRoutes(app: Express) {
           startDate.setMonth(now.getMonth() - 1); // Default to month
       }
       
+      console.log('Dashboard API - Fetching data...');
       // Fetch all required data
       const serviceRequests = await storage.getAllServiceRequests();
+      console.log('Dashboard API - Service Requests:', serviceRequests.length);
+      
       const leads = await storage.getAllLeads();
+      console.log('Dashboard API - Leads:', leads.length);
+      
       const appointments = await storage.getAllAppointments();
+      console.log('Dashboard API - Appointments:', appointments.length);
+      
       const transactions = await storage.getTransactionsByPeriod(startDate, now);
+      console.log('Dashboard API - Transactions:', transactions.length);
       
       // Calculate revenue, expenses and profit
       const revenueTransactions = transactions.filter(t => t.type === 'income');
@@ -176,6 +187,9 @@ export function setupDashboardRoutes(app: Express) {
             .slice(0, 10) // Get 10 most recent transactions
         }
       };
+      
+      console.log('Dashboard API - Response data prepared. Leads found:', leads?.length || 0);
+      console.log('Dashboard API - First lead:', leads && leads.length > 0 ? JSON.stringify(leads[0]) : 'No leads');
       
       res.json(dashboardData);
     } catch (error) {
