@@ -1,8 +1,13 @@
 import { users, User, InsertUser, serviceRequests, ServiceRequest, InsertServiceRequest, leads, Lead, InsertLead, appointments, Appointment, InsertAppointment, transactions, Transaction, InsertTransaction } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
+import { eq, and, sql, asc, gt, lt, gte, lte } from "drizzle-orm";
+import { db } from "./db";
+import connectPg from "connect-pg-simple";
+import { pool } from "./db";
 
 const MemoryStore = createMemoryStore(session);
+const PostgresSessionStore = connectPg(session);
 
 // Interface for storage operations
 export interface IStorage {
@@ -38,9 +43,234 @@ export interface IStorage {
   getTransactionsByPeriod(startDate: Date, endDate: Date): Promise<Transaction[]>;
   
   // Session store
-  sessionStore: session.SessionStore;
+  sessionStore: ReturnType<typeof createMemoryStore> | ReturnType<typeof connectPg>;
 }
 
+export class DatabaseStorage implements IStorage {
+  sessionStore: ReturnType<typeof createMemoryStore> | ReturnType<typeof connectPg>;
+
+  constructor() {
+    this.sessionStore = new PostgresSessionStore({
+      pool,
+      createTableIfMissing: true
+    });
+    
+    // Seed users needs to be handled carefully with database
+    // This will be called after database push in index.ts
+  }
+
+  async seedUsers() {
+    // First check if admin user already exists to avoid duplicates
+    const existingAdmin = await this.getUserByUsername("admin");
+    if (existingAdmin) {
+      console.log("Admin user already exists, skipping seed");
+      return;
+    }
+    
+    const adminUser: InsertUser = {
+      username: "admin",
+      password: "$2b$10$K7L1OJ45/4Y2nIvhRVpCe.FSmhDdWoXehVzJptJ/op0lSsvqNu/1u", // "password"
+      name: "Admin User",
+      email: "admin@elecplumb.com",
+      phone: "(337) 123-4567",
+      role: "admin"
+    };
+    
+    const ownerUser: InsertUser = {
+      username: "owner",
+      password: "$2b$10$K7L1OJ45/4Y2nIvhRVpCe.FSmhDdWoXehVzJptJ/op0lSsvqNu/1u", // "password"
+      name: "Owner User",
+      email: "owner@elecplumb.com",
+      phone: "(337) 123-4568",
+      role: "owner"
+    };
+    
+    const techUser: InsertUser = {
+      username: "technician",
+      password: "$2b$10$K7L1OJ45/4Y2nIvhRVpCe.FSmhDdWoXehVzJptJ/op0lSsvqNu/1u", // "password"
+      name: "Tech User",
+      email: "tech@elecplumb.com",
+      phone: "(337) 123-4569",
+      role: "technician"
+    };
+
+    await this.createUser(adminUser);
+    await this.createUser(ownerUser);
+    await this.createUser(techUser);
+    
+    console.log("Seed users created successfully");
+  }
+
+  // User methods
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db.insert(users).values(insertUser).returning();
+    return user;
+  }
+  
+  async getUsers(): Promise<User[]> {
+    return await db.select().from(users);
+  }
+  
+  async updateUser(id: number, data: Partial<User>): Promise<User | undefined> {
+    const [updatedUser] = await db
+      .update(users)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(users.id, id))
+      .returning();
+    
+    return updatedUser;
+  }
+
+  // Service Request methods
+  async createServiceRequest(request: InsertServiceRequest): Promise<ServiceRequest> {
+    const [serviceRequest] = await db
+      .insert(serviceRequests)
+      .values({ ...request, status: "new" })
+      .returning();
+    
+    return serviceRequest;
+  }
+  
+  async getServiceRequest(id: number): Promise<ServiceRequest | undefined> {
+    const [request] = await db
+      .select()
+      .from(serviceRequests)
+      .where(eq(serviceRequests.id, id));
+    
+    return request;
+  }
+  
+  async getServiceRequestsByUserId(userId: number): Promise<ServiceRequest[]> {
+    return await db
+      .select()
+      .from(serviceRequests)
+      .where(eq(serviceRequests.userId, userId));
+  }
+  
+  async getAllServiceRequests(): Promise<ServiceRequest[]> {
+    return await db.select().from(serviceRequests);
+  }
+  
+  async updateServiceRequest(id: number, data: Partial<ServiceRequest>): Promise<ServiceRequest | undefined> {
+    const [updatedRequest] = await db
+      .update(serviceRequests)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(serviceRequests.id, id))
+      .returning();
+    
+    return updatedRequest;
+  }
+
+  // Lead methods
+  async createLead(insertLead: InsertLead): Promise<Lead> {
+    const [lead] = await db
+      .insert(leads)
+      .values(insertLead)
+      .returning();
+    
+    return lead;
+  }
+  
+  async getLead(id: number): Promise<Lead | undefined> {
+    const [lead] = await db
+      .select()
+      .from(leads)
+      .where(eq(leads.id, id));
+    
+    return lead;
+  }
+  
+  async getAllLeads(): Promise<Lead[]> {
+    return await db.select().from(leads);
+  }
+  
+  async updateLead(id: number, data: Partial<Lead>): Promise<Lead | undefined> {
+    const [updatedLead] = await db
+      .update(leads)
+      .set(data)
+      .where(eq(leads.id, id))
+      .returning();
+    
+    return updatedLead;
+  }
+
+  // Appointment methods
+  async createAppointment(insertAppointment: InsertAppointment): Promise<Appointment> {
+    const [appointment] = await db
+      .insert(appointments)
+      .values(insertAppointment)
+      .returning();
+    
+    return appointment;
+  }
+  
+  async getAppointment(id: number): Promise<Appointment | undefined> {
+    const [appointment] = await db
+      .select()
+      .from(appointments)
+      .where(eq(appointments.id, id));
+    
+    return appointment;
+  }
+  
+  async getAppointmentsByUserId(userId: number): Promise<Appointment[]> {
+    return await db
+      .select()
+      .from(appointments)
+      .where(eq(appointments.userId, userId));
+  }
+  
+  async updateAppointment(id: number, data: Partial<Appointment>): Promise<Appointment | undefined> {
+    const [updatedAppointment] = await db
+      .update(appointments)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(appointments.id, id))
+      .returning();
+    
+    return updatedAppointment;
+  }
+
+  // Transaction methods
+  async createTransaction(insertTransaction: InsertTransaction): Promise<Transaction> {
+    const [transaction] = await db
+      .insert(transactions)
+      .values(insertTransaction)
+      .returning();
+    
+    return transaction;
+  }
+  
+  async getAllTransactions(): Promise<Transaction[]> {
+    return await db.select().from(transactions);
+  }
+  
+  async getTransactionsByPeriod(startDate: Date, endDate: Date): Promise<Transaction[]> {
+    const startDateStr = startDate.toISOString().split('T')[0];
+    const endDateStr = endDate.toISOString().split('T')[0];
+    
+    return await db
+      .select()
+      .from(transactions)
+      .where(
+        and(
+          sql`${transactions.date} >= ${startDateStr}`,
+          sql`${transactions.date} <= ${endDateStr}`
+        )
+      );
+  }
+}
+
+// Memory storage for fallback if needed
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private serviceRequests: Map<number, ServiceRequest>;
@@ -54,7 +284,7 @@ export class MemStorage implements IStorage {
     appointments: number;
     transactions: number;
   };
-  sessionStore: session.SessionStore;
+  sessionStore: ReturnType<typeof createMemoryStore> | ReturnType<typeof connectPg>;
 
   constructor() {
     this.users = new Map();
@@ -281,4 +511,5 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// Use the database storage implementation
+export const storage = new DatabaseStorage();

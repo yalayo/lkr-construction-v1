@@ -1,6 +1,9 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { storage } from "./storage";
+import { DatabaseStorage } from "./storage";
+import { db } from "./db";
 
 const app = express();
 app.use(express.json());
@@ -37,6 +40,26 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Initialize database and schema
+  try {
+    log("Running drizzle-kit push to create database schema", "db");
+    
+    // Create tables if not exists
+    const result = await import("child_process").then(({ execSync }) => {
+      return execSync("npm run db:push").toString();
+    });
+    
+    log(`Database schema creation result: ${result}`, "db");
+    
+    // Seed initial users
+    if (storage instanceof DatabaseStorage) {
+      log("Seeding initial users...", "db");
+      await storage.seedUsers();
+    }
+  } catch (error) {
+    log(`Error initializing database: ${error}`, "db");
+  }
+  
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
@@ -44,7 +67,7 @@ app.use((req, res, next) => {
     const message = err.message || "Internal Server Error";
 
     res.status(status).json({ message });
-    throw err;
+    console.error(err);
   });
 
   // importantly only setup vite in development and after
