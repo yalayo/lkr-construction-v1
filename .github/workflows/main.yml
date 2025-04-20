@@ -15,9 +15,12 @@ jobs:
       - name: Create the image
         uses: docker/build-push-action@v5
         with:
+          context: .
           platforms: linux/arm64
+          outputs: type=docker
+          tags: lkr-app:latest
+      - name: Save image to tarball
         run: |
-          docker buildx build --platform linux/arm64 -t lkr-app:latest .
           docker save -o app.tar lkr-app:latest
       - name: install ssh keys
         run: |
