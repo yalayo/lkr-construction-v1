@@ -1,11 +1,13 @@
-version: '3.8'
-
 services:
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: lkr-service-management
+  lkr:
+    iamge: lkr-app
+    container_name: lkr
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+        reservations:
+          memory: 1g
     ports:
       - "5000:5000"
     environment:
@@ -22,3 +24,9 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    networks:
+      - sharednetwork
+
+networks:
+  sharednetwork:
+    external: true
