@@ -30,7 +30,6 @@ RUN npm ci --only=production
 
 # Copy build files from builder stage
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/client/dist ./client/dist
 
 # Copy other necessary files
 COPY theme.json ./
