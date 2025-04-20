@@ -30,9 +30,9 @@ jobs:
             docker rmi ${{ secrets.WORK_DIR }}-app:latest
             cd ~/${{ secrets.WORK_DIR }} 
             rm -rf ~/${{ secrets.WORK_DIR }}/docker
-            mkdir ~/${{ secrets.WORK_DIR }}/docker
+            mkdir -p ~/${{ secrets.WORK_DIR }}/docker
           else
-            mkdir ~/${{ secrets.WORK_DIR }}/docker
+            mkdir -p ~/${{ secrets.WORK_DIR }}/docker
           fi 
           exit"
           scp -o StrictHostKeyChecking=no app.tar ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.WORK_DIR }}/docker
