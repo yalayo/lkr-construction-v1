@@ -29,4 +29,3 @@ services:
 networks:
   sharednetwork:
     external: true
-    postgresql://neondb_owner:npg_2wjlf9bEmMOe@ep-winter-glitter-a4pny19c.us-east-1.aws.neon.tech/neondb?sslmode=require
