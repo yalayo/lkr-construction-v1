@@ -1,0 +1,26 @@
+services:
+  lkr:
+    iamge: lkr-app
+    container_name: lkr
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+        reservations:
+          memory: 1g
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL}
+      - TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID}
+      - TWILIO_AUTH_TOKEN=${TWILIO_AUTH_TOKEN}
+      - TWILIO_PHONE_NUMBER=${TWILIO_PHONE_NUMBER}
+      - SESSION_SECRET=${SESSION_SECRET:-some-very-secure-secret-key-for-sessions}
+    restart: unless-stopped
+    networks:
+      - sharednetwork
+
+networks:
+  sharednetwork:
+    external: true
