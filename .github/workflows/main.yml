@@ -13,6 +13,9 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
       - name: Create the image
+        uses: docker/build-push-action@v5
+        with:
+          platforms: linux/arm64
         run: |
           docker buildx build --platform linux/arm64 -t lkr-app:latest .
           docker save -o app.tar lkr-app:latest
