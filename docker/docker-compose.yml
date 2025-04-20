@@ -13,10 +13,15 @@ services:
     environment:
       - NODE_ENV=production
       - DATABASE_URL=${DATABASE_URL}
+      - PGHOST=${DB_HOST}
+      - PGPORT=5432
+      - PGDATABASE=lkrdb
+      - PGUSER=${DB_USER}
+      - PGPASSWORD=${DB_PASSWORD}
       - TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID}
       - TWILIO_AUTH_TOKEN=${TWILIO_AUTH_TOKEN}
       - TWILIO_PHONE_NUMBER=${TWILIO_PHONE_NUMBER}
-      - SESSION_SECRET=${SESSION_SECRET:-some-very-secure-secret-key-for-sessions}
+      - SESSION_SECRET=${LKR_SESSION_SECRET:-some-very-secure-secret-key-for-sessions}
     restart: unless-stopped
     networks:
       - sharednetwork
@@ -24,3 +29,4 @@ services:
 networks:
   sharednetwork:
     external: true
+    postgresql://neondb_owner:npg_2wjlf9bEmMOe@ep-winter-glitter-a4pny19c.us-east-1.aws.neon.tech/neondb?sslmode=require
