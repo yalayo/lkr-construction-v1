@@ -1,0 +1,52 @@
+name: Build and Push Full Stack Docker Image
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      - name: Create the image
+        run: |
+          docker build -t lkr-app:latest .
+          docker save -o app.tar lkr-app:latest
+      - name: install ssh keys
+        run: |
+          install -m 600 -D /dev/null ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
+      - name: Copy image and run it on the VM
+        run: |
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} " \
+          if [ -d ~/${{ secrets.WORK_DIR }}/docker ]; then 
+            cd ~/${{ secrets.WORK_DIR }}/docker
+            docker compose down
+            docker rmi ${{ secrets.WORK_DIR }}-app:latest
+            cd ~/${{ secrets.WORK_DIR }} 
+            rm -rf ~/${{ secrets.WORK_DIR }}/docker
+            mkdir ~/${{ secrets.WORK_DIR }}/docker
+          else
+            mkdir ~/${{ secrets.WORK_DIR }}/docker
+          fi 
+          exit"
+          scp -o StrictHostKeyChecking=no app.tar ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.WORK_DIR }}/docker
+      - name: Load Docker image on VM
+        run: |
+          scp -r ./docker/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.WORK_DIR }}/
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+            docker load -i ~/${{ secrets.WORK_DIR }}/docker/app.tar
+            docker tag app.tar:latest ${{ secrets.APP_NAME }}-app:latest
+            docker rmi app.tar:latest
+            cd ~/${{ secrets.WORK_DIR }}/docker
+            docker compose up -d
+            exit
+          EOF
+      - name: Cleanup
+        run: rm -rf ~/.ssh
+      
