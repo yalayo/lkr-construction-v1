@@ -1,4 +1,4 @@
-FROM --platform=linux/arm64 arm64v8/node:20 AS builder
+FROM --platform=linux/arm64 gcr.io/distroless/nodejs20-debian12:nonroot-arm64 AS builder
 
 # Create app directory
 WORKDIR /app
@@ -14,7 +14,7 @@ COPY . .
 RUN npm run build
 
 # Production stage
-FROM --platform=linux/arm64 arm64v8/node:20 AS production
+FROM --platform=linux/arm64 gcr.io/distroless/nodejs20-debian12:nonroot-arm64 AS production
 
 # Create app directory
 WORKDIR /app
