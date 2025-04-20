@@ -1,6 +1,6 @@
 services:
   lkr:
-    iamge: lkr-app
+    image: lkr-app
     container_name: lkr
     deploy:
       resources:
