@@ -1,4 +1,4 @@
-FROM node:20-slim AS builder
+FROM --platform=linux/arm64 arm64v8/node:20 AS builder
 
 # Create app directory
 WORKDIR /app
@@ -14,7 +14,7 @@ COPY . .
 RUN npm run build
 
 # Production stage
-FROM node:20-slim AS production
+FROM --platform=linux/arm64 arm64v8/node:20 AS production
 
 # Create app directory
 WORKDIR /app
