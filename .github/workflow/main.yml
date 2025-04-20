@@ -41,7 +41,7 @@ jobs:
           scp -r ./docker/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.WORK_DIR }}/
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
             docker load -i ~/${{ secrets.WORK_DIR }}/docker/app.tar
-            docker tag app.tar:latest ${{ secrets.APP_NAME }}-app:latest
+            docker tag app.tar:latest ${{ secrets.WORK_DIR }}-app:latest
             docker rmi app.tar:latest
             cd ~/${{ secrets.WORK_DIR }}/docker
             docker compose up -d
