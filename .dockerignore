@@ -2,9 +2,6 @@
 node_modules/
 npm-debug.log
 
-# Build artifacts
-dist/
-client/dist/
 
 # Development files
 .git/
