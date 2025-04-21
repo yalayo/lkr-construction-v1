@@ -13,6 +13,7 @@ FROM --platform=linux/arm64 gcr.io/distroless/nodejs20-debian12:nonroot-arm64 AS
 WORKDIR /app
 ENV NODE_ENV=production
 
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY theme.json ./
 COPY .env* ./
