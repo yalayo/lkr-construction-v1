@@ -1,42 +1,23 @@
-FROM --platform=linux/arm64 gcr.io/distroless/nodejs20-debian12:nonroot-arm64 AS builder
+FROM --platform=linux/arm64 node:20-bullseye AS builder
 
-# Create app directory
 WORKDIR /app
 
-# Copy package files and install dependencies
 COPY package*.json ./
-RUN npm ci
-
-# Copy source code
-COPY . .
-
-# Build the application
-RUN npm run build
-
-# Production stage
-FROM --platform=linux/arm64 gcr.io/distroless/nodejs20-debian12:nonroot-arm64 AS production
-
-# Create app directory
-WORKDIR /app
-
-# Set environment to production
-ENV NODE_ENV=production
-
-# Copy package files
-COPY package*.json ./
-
-# Install only production dependencies
 RUN npm ci --only=production
 
-# Copy build files from builder stage
-COPY --from=builder /app/dist ./dist
+COPY . .
+RUN npm run build
 
-# Copy other necessary files
+FROM --platform=linux/arm64 gcr.io/distroless/nodejs20-debian12:nonroot-arm64 AS production
+
+WORKDIR /app
+ENV NODE_ENV=production
+
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/dist ./dist
 COPY theme.json ./
 COPY .env* ./
 
-# Expose port
 EXPOSE 5000
 
-# Start the application
 CMD ["node", "dist/index.js"]
