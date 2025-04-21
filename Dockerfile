@@ -8,7 +8,7 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-FROM --platform=linux/arm64 gcr.io/distroless/nodejs20-debian12:nonroot-arm64 AS production
+FROM --platform=linux/arm64 node:20-bullsey AS production
 
 WORKDIR /app
 ENV NODE_ENV=production
